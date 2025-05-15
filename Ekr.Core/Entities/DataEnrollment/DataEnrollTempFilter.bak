@@ -1,0 +1,53 @@
+﻿using Ekr.Core.Entities.Base;
+
+namespace Ekr.Core.Entities.DataEnrollment
+{
+    public class DataEnrollTempFilter : BaseSqlGridFilter
+    {
+        public string NIK { get; set; } = null;
+        public string Jenis { get; set; } = null;
+        public string CIF { get; set; } = null;
+        public string Nama { get; set; } = null;
+        public string Browser { get; set; } = null;
+        public string IpAddress { get; set; } = null;
+        public string Url { get; set; } = null;
+        public string UnitIds { get; set; }
+        public int LoginUnitId { get; set; }
+        public int LoginPegawaiId { get; set; }
+        public int LoginRoleId { get; set; }
+    }
+    public class ExportDataEnrollTempFilter
+    {
+        public string NIK { get; set; } = null;
+        public string Nama { get; set; } = null;
+        public string UnitIds { get; set; }
+        public int LoginUnitId { get; set; }
+        public int LoginPegawaiId { get; set; }
+        public int LoginRoleId { get; set; }
+        public string SortColumn { get; set; } = "Id";
+        public string SortColumnDir { get; set; } = "desc";
+    }
+
+    public class DataEnrollTemp2Filter : BaseSqlGridFilter
+    {
+        public string NIK { get; set; } = null;
+        public string CIF { get; set; } = null;
+        public string Nama { get; set; } = null;
+        public string Browser { get; set; } = null;
+        public string IpAddress { get; set; } = null;
+        public string Url { get; set; } = null;
+        public string LoginUnitId { get; set; }
+        public int LoginPegawaiId { get; set; }
+        public int LoginRoleId { get; set; }
+    }
+    public class ExportDataEnrollTemp2Filter
+    {
+        public string NIK { get; set; } = null;
+        public string Nama { get; set; } = null;
+        public string LoginUnitId { get; set; }
+        public int LoginPegawaiId { get; set; }
+        public int LoginRoleId { get; set; }
+        public string SortColumn { get; set; } = "Id";
+        public string SortColumnDir { get; set; } = "desc";
+    }
+}

@@ -1,0 +1,179 @@
+﻿using Ekr.Core.Configuration;
+using Ekr.Dapper.Connection.Contracts.Base;
+using Microsoft.Extensions.Options;
+using ServiceStack.OrmLite;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Threading.Tasks;
+
+namespace Ekr.Dapper.Connection.Base
+{
+    public class SqlServerConnection : IBaseConnection
+    {
+        private readonly string _connectionString;
+        private readonly ErrorMessageConfig _ErrorMessageConfig;
+
+        public SqlServerConnection(string connectionString, IOptions<ErrorMessageConfig> options)
+        {
+            _connectionString = connectionString;
+            _ErrorMessageConfig = options.Value;
+        }
+
+        public T WithConnection<T>(Func<IDbConnection, T> func)
+        {
+            try
+            {
+                using var db = new OrmLiteConnectionFactory
+                    (_connectionString, SqlServerDialect.Provider).OpenDbConnection();
+                db.Open();
+                var a = func.Invoke(db);
+                db.Close();
+                db.Dispose();
+                return a;
+            }
+            catch (TimeoutException ex)
+            {
+                throw new Exception("Connection to database timeout!", ex);
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("SQL Exception!", ex);
+            }
+        }
+
+        public void WithConnection(Action<IDbConnection> func)
+        {
+            try
+            {
+                using var db = new OrmLiteConnectionFactory
+                    (_connectionString, SqlServerDialect.Provider).OpenDbConnection();
+                db.Open();
+                func.Invoke(db);
+                db.Close();
+                db.Dispose();
+            }
+            catch (TimeoutException ex)
+            {
+                throw new Exception("Connection to database timeout!", ex);
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("SQL Exception!", ex);
+            }
+        }
+
+        public async Task<T> WithConnectionAsync<T>(Func<IDbConnection, Task<T>> func)
+        {
+            try
+            {
+                using var db = new OrmLiteConnectionFactory
+                    (_connectionString, SqlServerDialect.Provider).OpenDbConnection();
+                db.Open();
+                var a = await func.Invoke(db).ConfigureAwait(false);
+                db.Close();
+                db.Dispose();
+                return a;
+            }
+            catch (TimeoutException ex)
+            {
+                //throw new Exception("Connection to database timeout!", ex);
+                throw new Exception(_ErrorMessageConfig.TimeoutException, ex);
+            }
+            catch(SqlException ex)
+            {
+                //throw new Exception("SQL Exception!", ex);
+                throw new Exception(_ErrorMessageConfig.SQLException, ex);
+            }
+        }
+
+        public async Task WithConnectionAsync(Func<IDbConnection, Task> func)
+        {
+            try
+            {
+                using var db = new OrmLiteConnectionFactory
+                    (_connectionString, SqlServerDialect.Provider).OpenDbConnection();
+                db.Open();
+                await func.Invoke(db).ConfigureAwait(false);
+                db.Close();
+                db.Dispose();
+
+                return;
+            }
+            catch (TimeoutException ex)
+            {
+                throw new Exception("Connection to database timeout!", ex);
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("SQL Exception!", ex);
+            }
+        }
+
+        public void WithTransactionDapper(Action<IDbConnection, IDbTransaction> actions)
+        {
+            using var db = new OrmLiteConnectionFactory
+                (_connectionString, SqlServerDialect.Provider).OpenDbConnection();
+            using var context = db.OpenTransaction();
+            actions.Invoke(db, context.ToDbTransaction());
+            context.Commit();
+            db.Close();
+        }
+
+        public T WithTransactionDapper<T>(Func<IDbConnection, IDbTransaction, T> func)
+        {
+            using var db = new OrmLiteConnectionFactory
+                (_connectionString, SqlServerDialect.Provider).OpenDbConnection();
+            using var context = db.OpenTransaction();
+            var result = func.Invoke(db, context.ToDbTransaction());
+            context.Commit();
+            db.Close();
+            return result;
+        }
+
+        public void WithTransaction(Action<IDbConnection> actions)
+        {
+            using var db = new OrmLiteConnectionFactory
+                (_connectionString, SqlServerDialect.Provider).OpenDbConnection();
+            using var context = db.OpenTransaction();
+            actions.Invoke(db);
+            context.Commit();
+            db.Close();
+        }
+
+        public IEnumerable<T> WithTransaction<T>(Func<IDbConnection, IEnumerable<T>> func)
+        {
+            using var db = new OrmLiteConnectionFactory
+                (_connectionString, SqlServerDialect.Provider).OpenDbConnection();
+            using var context = db.OpenTransaction();
+            var data = func.Invoke(db);
+            context.Commit();
+            db.Close();
+            return data;
+        }
+
+        public T WithTransaction<T>(Func<IDbConnection, T> func)
+        {
+            using var db = new OrmLiteConnectionFactory
+                 (_connectionString, SqlServerDialect.Provider).OpenDbConnection();
+            using var context = db.OpenTransaction();
+            var data = func.Invoke(db);
+            context.Commit();
+            db.Close();
+            return data;
+        }
+
+        public async Task WithTransactionAsync(Func<IDbConnection, Task> actions)
+        {
+            using var db = new OrmLiteConnectionFactory
+                (_connectionString, SqlServerDialect.Provider).OpenDbConnection();
+            db.Open();
+            using var context = db.BeginTransaction();
+            await actions.Invoke(db)
+                .ConfigureAwait(false);
+            context.Commit();
+            db.Close();
+        }
+    }
+}

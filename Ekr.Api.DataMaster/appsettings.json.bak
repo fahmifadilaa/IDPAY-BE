@@ -1,0 +1,34 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information",
+      "Elastic.Apm": "Debug"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "dbConnection": "Server=192.168.174.15;Database=DatabaseKTP;User Id=sa;Password=bni46SQL"
+  },
+  "AppSettings": {
+    "Secret": "47fab19090a41d7efc69cb542f31a47558f547808dd59fbef6468aa3e22128cd",
+    "Issuer": "http://ktpdev.idpro.co.id/",
+    "TokenLifetime": "66666"
+  },
+  "GlobalSettings": {
+
+  },
+  "ElasticApm": {
+    "ServerUrls": "http://192.168.174.17/",
+    "TransactionSampleRate": 1.0,
+    "ServiceName": "api-data-master",
+    "CaptureBody": "all",
+    "CaptureBodyContentTypes": "application/x-www-form-urlencoded*, text/*, application/json*, application/xml*",
+    "CloudProvider": "none"
+  },
+  "isEncrypt": false,
+  "IpProxy": "http://192.168.45.194:8080",
+  "isProxy": false,
+  "IsSwaggerVisible": true
+}

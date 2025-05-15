@@ -1,0 +1,54 @@
+{
+  "Routes": [
+    {
+      //"DownstreamPathTemplate": "/EkrAuth/auth/{everything}",
+      "DownstreamPathTemplate": "/auth/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "128.199.98.41",
+          "Port": 93
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/{everything}",
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+    {
+      //"DownstreamPathTemplate": "/DataEnrollment/profile/{everything}",
+      "DownstreamPathTemplate": "/profile/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "128.199.98.41",
+          "Port": 92
+        }
+      ],
+      "UpstreamPathTemplate": "/profile/{everything}",
+      "UpstreamHttpMethod": [ "Post", "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/dm/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "128.199.98.41",
+          "Port": 91
+        }
+      ],
+      "UpstreamPathTemplate": "/dm/{everything}",
+      "UpstreamHttpMethod": [ "Put", "Delete", "Post", "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    }
+  ],
+  "GlobalConfiguration": {
+    //"BaseUrl": "http://localhost:19074"
+    "BaseUrl": "http://128.199.98.41:89/EkrGateway"
+  }
+}

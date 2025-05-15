@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.12.2" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.12.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ekr.Auth.Contracts\Ekr.Auth.Contracts.csproj" />
+    <ProjectReference Include="..\Ekr.Core\Ekr.Core.csproj" />
+    <ProjectReference Include="..\Ekr.Gateway\Ekr.Gateway.csproj" />
+    <ProjectReference Include="..\Ekr.Repository.Contracts\Ekr.Repository.Contracts.csproj" />
+    <ProjectReference Include="..\Ekr.Services\Ekr.Services.csproj" />
+  </ItemGroup>
+
+</Project>

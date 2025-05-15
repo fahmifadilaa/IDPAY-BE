@@ -1,0 +1,462 @@
+{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/EkrAuth/auth/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/{everything}",
+      "UpstreamHttpMethod": [
+        "POST",
+        "GET"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/DataEnrollment/profile/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/profile/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+
+        ]
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/DataEnrollmentEncrypted/profile-encrypt/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/profile-encrypt/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+
+        ]
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/DataMatching/matching/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/matching/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+
+        ]
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/DataMatchingEncrypted/matching-encrypt/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/matching-encrypt/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+
+        ]
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/EnrollmentMonitoring/enrollTemp/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/enrollTemp/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+
+        ]
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/DataEnrollment/enrollment/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/enrollment/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+
+        ]
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/DataEnrollmentEncrypted/enrollment-encrypt/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/enrollment-encrypt/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+
+        ]
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/DataEnrollment/dashboard/data_enrollment/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/dashboard/data_enrollment/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+
+        ]
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/DataEnrollment/dashboard/reader/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/dashboard/reader/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+
+        ]
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/EktpDataMaster/dm/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/dm/{everything}",
+      "UpstreamHttpMethod": [
+        "Put",
+        "Delete",
+        "Post",
+        "Get"
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+
+        ]
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/EnrollmentMonitoring/dbenroll/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/dbenroll/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+
+        ]
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/EnrollmentMonitoring/CekAlat/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/CekAlat/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+
+        ]
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/DataEnrollment/enrollment-public/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/enrollment-public/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/DataFingerISO/profile-encrypt-iso/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/profile-encrypt-iso/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/DataMatchingIso/matching-encrypt-iso/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/matching-encrypt-iso/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/DataFingerISO/enrollment-encrypt-iso/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/enrollment-encrypt-iso/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ]
+    },
+	{
+      "DownstreamPathTemplate": "/EkrApiMessageCode/mc/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/message-code/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get",
+		"Put",
+		"Delete"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/EkrApiSettingThreshold/setting_threshold/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/setting-threshold/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get",
+		"Put",
+		"Delete"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/EkrMappingNIK/mapping-nik/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/mapping-nik/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get",
+		"Put",
+		"Delete"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/EnrollmentNoMatching/enrollment-encrypt-NoMatching/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/enrollment-encrypt-NoMatching/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get",
+		"Put",
+		"Delete"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/DataMatchingNoMatching/matching-encrypt-NoMatching/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/matching-encrypt-NoMatching/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get",
+		"Put",
+		"Delete"
+      ]
+    },
+	{
+      "DownstreamPathTemplate": "/EnrollmentIKD/enrollment-encrypt-IKD/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/enrollment-encrypt-IKD/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get",
+		"Put",
+		"Delete"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/MonitoringDataNoMatching/dashboard/data_enrollment_no_matching/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/dashboard/data_enrollment_no_matching/{everything}",
+      "UpstreamHttpMethod": [
+        "Post",
+        "Get"
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": [
+
+        ]
+      }
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:80/EkrGateway",
+    "HttpHandlerOptions": {
+      "MaxConnectionsPerServer": 5000
+    }
+  }
+}

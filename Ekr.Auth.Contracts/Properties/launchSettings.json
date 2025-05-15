@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Ekr.Auth.Contracts": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:59738;http://localhost:59739"
+    }
+  }
+}

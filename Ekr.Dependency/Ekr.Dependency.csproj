@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ekr.Auth.Contracts\Ekr.Auth.Contracts.csproj" />
+    <ProjectReference Include="..\Ekr.Auth\Ekr.Auth.csproj" />
+    <ProjectReference Include="..\Ekr.Business.Contracts\Ekr.Business.Contracts.csproj" />
+    <ProjectReference Include="..\Ekr.Business\Ekr.Business.csproj" />
+    <ProjectReference Include="..\Ekr.Dapper.Connection\Ekr.Dapper.Connection.csproj" />
+    <ProjectReference Include="..\Ekr.Repository\Ekr.Repository.csproj" />
+    <ProjectReference Include="..\Ekr.Services\Ekr.Services.csproj" />
+  </ItemGroup>
+
+</Project>
