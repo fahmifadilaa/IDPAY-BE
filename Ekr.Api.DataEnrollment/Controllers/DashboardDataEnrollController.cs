@@ -1,0 +1,451 @@
+﻿using Ekr.Api.DataEnrollment.Filters;
+using Ekr.Auth;
+using Ekr.Core.Constant;
+using Ekr.Core.Entities;
+using Ekr.Core.Entities.DataEnrollment;
+using Ekr.Core.Entities.DataEnrollment.ViewModel;
+using Ekr.Core.Entities.DataMaster.AgeSegmentation.Entity;
+using Ekr.Core.Entities.DataMaster.AgeSegmentation.ViewModel;
+using Ekr.Core.Securities.Symmetric;
+using Ekr.Repository.Contracts.DataEnrollment;
+using Ekr.Repository.Contracts.DataMaster.AgeSegmentation;
+using Ekr.Repository.Contracts.Enrollment;
+using Ekr.Repository.Enrollment;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+
+namespace Ekr.Api.DataMaster.Controllers
+{
+    /// <summary>
+    /// api dashboard data enrollment
+    /// </summary>
+    [Route("dashboard/data_enrollment")]
+    [ApiController]
+    public class DashboardDataEnrollController : ControllerBase
+    {
+        private readonly IDashboardDataEnrollRepository _dashboardDataEnrollRepository;
+        private readonly IEnrollmentKTPRepository _enrollmentKTPRepository;
+
+        public DashboardDataEnrollController(IDashboardDataEnrollRepository dashboardDataEnrollRepository, IEnrollmentKTPRepository enrollmentKTPRepository)
+        {
+            _dashboardDataEnrollRepository = dashboardDataEnrollRepository;
+            _enrollmentKTPRepository = enrollmentKTPRepository;
+        }
+
+        /// <summary>
+        /// Untuk load chart pekerjaan
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        [HttpPost("job_chart")]
+        [ProducesResponseType(typeof(ServiceResponses<JobChartDataVM>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "Untuk load chart pekerjaan")]
+        public async Task<ServiceResponses<JobChartDataVM>> GetJobChart(UnitIdsFilterVM req)
+        {
+            var res = await _dashboardDataEnrollRepository.GetJobChart(req);
+            //var res = await _dashboardDataEnrollRepository.GetJobChart2(req);
+            return new ServiceResponses<JobChartDataVM>
+            {
+                Status = (int)ServiceResponseStatus.SUKSES,
+                Message = "Success",
+                Data = res
+            };
+        }
+
+        /// <summary>
+        /// Untuk load chart Data Type Enrollment
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        [HttpPost("type_enrollment_chart")]
+        [ProducesResponseType(typeof(ServiceResponses<TypeEnrollmentVM>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "Untuk load chart data type enrollment")]
+        public async Task<ServiceResponses<TypeEnrollmentVM>> GettypeEnrollmentChart(UnitIdsFilterVM req)
+        //public async Task<ServiceResponses<TypeEnrollmentVM>> GettypeEnrollmentChart(UnitIdsFilterVM2 req)
+        {
+            var res = await _dashboardDataEnrollRepository.GetTypeEnrollmentChart(req);
+            //var res = await _dashboardDataEnrollRepository.GetTypeEnrollmentChart2(req);
+            return new ServiceResponses<TypeEnrollmentVM>
+            {
+                Status = (int)ServiceResponseStatus.SUKSES,
+                Message = "Success",
+                Data = res
+            };
+        }
+
+        /// <summary>
+        /// Untuk load chart Data Enrollment By Channel
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        [HttpPost("channel_enrollment_chart")]
+        [ProducesResponseType(typeof(ServiceResponses<TypeEnrollmentVM>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "Untuk load chart channel enrollment")]
+        public async Task<ServiceResponses<ChannelEnrollmentVM>> GetChannelEnrollmentChart(UnitIdsFilterVM req)
+        {
+            var res = await _dashboardDataEnrollRepository.GetChannelEnrollmentChart(req);
+
+            return new ServiceResponses<ChannelEnrollmentVM>
+            {
+                Status = (int)ServiceResponseStatus.SUKSES,
+                Message = "Success",
+                Data = res
+            };
+        }
+        
+        /// <summary>
+        /// Untuk load chart Data Enrollment By Status
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        [HttpPost("status_enrollment_chart")]
+        [ProducesResponseType(typeof(ServiceResponses<StatusEnrollmentVM>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "Untuk load chart status enrollment")]
+        public async Task<ServiceResponses<StatusEnrollmentVM>> GetStatusEnrollmentChart(UnitIdsFilterVM req)
+        {
+            var res = await _dashboardDataEnrollRepository.GetStatusEnrollmentChart(req);
+
+            return new ServiceResponses<StatusEnrollmentVM>
+            {
+                Status = (int)ServiceResponseStatus.SUKSES,
+                Message = "Success",
+                Data = res
+            };
+        }
+
+        /// <summary>
+        /// Untuk load chart agama
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        [HttpPost("religion_chart")]
+        [ProducesResponseType(typeof(ServiceResponses<ReligionChartDataVM>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "Untuk load chart agama")]
+        public async Task<ServiceResponses<ReligionChartDataVM>> GetReligionChart(UnitIdsFilterVM req)
+        {
+            var res = await _dashboardDataEnrollRepository.GetReligionChart(req);
+
+            return new ServiceResponses<ReligionChartDataVM>
+            {
+                Status = (int)ServiceResponseStatus.SUKSES,
+                Message = "Success",
+                Data = res
+            };
+        }
+
+        /// <summary>
+        /// Untuk load chart generasi kelahiran
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        [HttpPost("born_generation_chart")]
+        [ProducesResponseType(typeof(ServiceResponses<BornGenerationChartDataVM>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "Untuk load chart generasi kelahiran")]
+        public async Task<ServiceResponses<BornGenerationChartDataVM>> GetBornGenerationChart(UnitIdsFilterVM req)
+        {
+            var res = await _dashboardDataEnrollRepository.GetBornGenerationChart(req);
+
+            return new ServiceResponses<BornGenerationChartDataVM>
+            {
+                Status = (int)ServiceResponseStatus.SUKSES,
+                Message = "Success",
+                Data = res
+            };
+        }
+
+        /// <summary>
+        /// Untuk load chart segmentasi usia
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        [HttpPost("age_segmentation_chart")]
+        [ProducesResponseType(typeof(ServiceResponses<AgeSegmentationChartDataVM>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "Untuk load chart segmentasi usia")]
+        public async Task<ServiceResponses<AgeSegmentationChartDataVM>> GetAgeSegmentationChart(UnitIdsFilterVM req)
+        {
+            var res = await _dashboardDataEnrollRepository.GetAgeSegmentationChart(req);
+
+            return new ServiceResponses<AgeSegmentationChartDataVM>
+            {
+                Status = (int)ServiceResponseStatus.SUKSES,
+                Message = "Success",
+                Data = res
+            };
+        }
+
+        /// <summary>
+        /// Untuk load enroll per unit
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        [HttpPost("enroll_per_unit")]
+        [ProducesResponseType(typeof(ServiceResponse<GridResponse<EnrollPerUnitVM>>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "Untuk load enroll per unit")]
+        public async Task<ServiceResponse<GridResponse<EnrollPerUnitVM>>> GetEnrollPerUnit([FromBody] EnrollPerUnitFilterVM req)
+        {
+            var res = await _dashboardDataEnrollRepository.GetEnrollPerUnit(req);
+
+            return new ServiceResponse<GridResponse<EnrollPerUnitVM>>
+            {
+                Status = (int)ServiceResponseStatus.SUKSES,
+                Message = "Success",
+                Data = res
+            };
+        }
+
+        /// <summary>
+        /// Untuk load detail enroll per unit
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        [HttpPost("enroll_per_unit_list")]
+        [ProducesResponseType(typeof(ServiceResponse<GridResponse<EnrollPerUnitVM>>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "Untuk load detail enroll per unit")]
+        public async Task<ServiceResponse<GridResponse<EnrollPerUnitVM>>> GetEnrollPerUnitList([FromBody] EnrollPerUnitFilterVM req)
+        {
+            var res = await _dashboardDataEnrollRepository.GetEnrollPerUnit(req);
+
+            return new ServiceResponse<GridResponse<EnrollPerUnitVM>>
+            {
+                Status = (int)ServiceResponseStatus.SUKSES,
+                Message = "Success",
+                Data = res
+            };
+        }
+
+        /// <summary>
+        /// To get detail data by nik
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        [HttpGet("detail_data")]
+        [ProducesResponseType(typeof(ServiceResponse<EnrollKTPVM>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "To get detail data by nik")]
+        public async Task<ServiceResponse<EnrollKTPVM>> DetailData([FromQuery] EnrollKTPFIlterVM req)
+        {
+            var res = await _dashboardDataEnrollRepository.DetailData(req);
+
+            return new ServiceResponse<EnrollKTPVM>
+            {
+                Status = (int)ServiceResponseStatus.SUKSES,
+                Message = "Success",
+                Data = res
+            };
+        }
+
+        /// <summary>
+        /// Untuk load dashboard enroll
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        [HttpPost("dashboard-enroll-list")]
+        [ProducesResponseType(typeof(ServiceResponse<GridResponse<DahboardEnrollmentPG>>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "Untuk load dashboard enroll")]
+        public async Task<ServiceResponse<GridResponse<DahboardEnrollmentPG>>> GetDashboardEnroll([FromBody] DahboardEnrollmentPGFilterVM req)
+        {
+            string authorization = HttpContext.Request.Headers["Authorization"];
+
+            if (!string.IsNullOrWhiteSpace(authorization))
+            {
+                var token = authorization.Split(" ")[1];
+
+                var claims = TokenManager.GetPrincipal(token);
+
+                req.UnitCode = claims.KodeUnit;
+                req.Role = claims.RoleUnitId == "x" ? claims.RoleId : claims.RoleUnitId;
+            }
+
+            var res = await _dashboardDataEnrollRepository.DashboardEnrollList(req);
+
+            var data = new List<DahboardEnrollmentPG>();
+
+            foreach (var i in res.Data)
+            {
+                data.Add(new DahboardEnrollmentPG
+                {
+                    Alamat = i.Alamat,
+                    CreatedTime = i.CreatedTime,
+                    File = ConvertUrlToB64(i.File),
+                    Id = i.Id,
+                    JenisKelamin = i.JenisKelamin,
+                    Nama = i.Nama,
+                    NIK = i.NIK,
+                    Provinsi = i.Provinsi,
+                    PathFile = ConvertUrlToB64(i.PathFile),
+                    TanggalLahir = i.TanggalLahir,
+                    TempatLahir = i.TempatLahir,
+                    EnrollBy = i.EnrollBy,
+                    StatusData = i.StatusData
+                });
+            }
+
+            res.Data = data;
+
+            return new ServiceResponse<GridResponse<DahboardEnrollmentPG>>
+            {
+                Status = (int)ServiceResponseStatus.SUKSES,
+                Message = "Success",
+                Data = res
+            };
+        }
+
+        /// <summary>
+        /// Untuk Load Data all enroll
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        [HttpPost("grid-finger-enc-only")]
+        [ProducesResponseType(typeof(ServiceResponse<GridResponse<MonitoringEnrollNew>>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "Dashboard data enroll")]
+        //public async Task<ServiceResponse<GridResponse<MonitoringEnrollNew>>> GetDBEnroll(DataEnrollTempFilterV2 filter)
+        //public async Task<ServiceResponse<GridResponse<MonitoringEnrollNew>>> GetDBEnroll(DataEnrollTempFilterV4 filter)
+        public async Task<ServiceResponse<GridResponseNew<MonitoringEnrollNew>>> GetDBEnroll(DataEnrollTempFilterV4 filter)
+        {
+            if (filter?.PageSize == null)
+            {
+                //return new ServiceResponse<GridResponse<MonitoringEnrollNew>>
+                //{
+                //    Message = nameof(ServiceResponseStatus.EMPTY_PARAMETER),
+                //    Status = (int)ServiceResponseStatus.EMPTY_PARAMETER
+                //};
+                return new ServiceResponse<GridResponseNew<MonitoringEnrollNew>>
+                {
+                    Message = nameof(ServiceResponseStatus.EMPTY_PARAMETER),
+                    Status = (int)ServiceResponseStatus.EMPTY_PARAMETER
+                };
+            }
+
+            string authorization = HttpContext.Request.Headers["Authorization"];
+
+            if (!string.IsNullOrWhiteSpace(authorization))
+            {
+                var token = authorization.Split(" ")[1];
+
+                var claims = TokenManager.GetPrincipal(token);
+
+                filter.LoginPegawaiId = int.Parse(claims.PegawaiId);
+                filter.LoginRoleId = int.Parse(claims.RoleUnitId == "x" ? claims.RoleId : claims.RoleUnitId);
+                filter.LoginUnitId = int.Parse(claims.UnitId == "x" ? "1" : claims.UnitId);
+            }
+
+            //var res = await _dashboardDataEnrollRepository.GetDBEnroll(filter);
+            //var res = await _enrollmentKTPRepository.GetDBEnrollV2(filter);
+            //var res = await _enrollmentKTPRepository.GetDBEnrollV3(filter);
+            var res = await _enrollmentKTPRepository.GetDBEnrollV4(filter);
+
+            var data = new List<MonitoringEnrollNew>();
+
+            foreach (var i in res.Data)
+            {
+                #region old
+                //data.Add(new MonitoringEnroll
+                //{
+                //    AlamatLengkap = i.AlamatLengkap,
+                //    CreatedTime = i.CreatedTime,
+                //    File = ConvertUrlToB64FingerEncOnly(i.File),
+                //    Id = i.Id,
+                //    JenisKelamin = i.JenisKelamin,
+                //    Nama = i.Nama,
+                //    NIK = i.NIK,
+                //    Number = i.Number,
+                //    PathFile = ConvertUrlToB64FingerEncOnly(i.PathFile),
+                //    TanggalLahir = i.TanggalLahir,
+                //    TempatLahir = i.TempatLahir,
+                //    EnrollBy = i.EnrollBy,
+                //    StatusData = i.StatusData,
+                //    CIF = i.CIF,
+                //    status = i.status
+                //});
+                #endregion end
+
+                #region new
+                data.Add(new MonitoringEnrollNew
+                {
+                    KantorWilayah = i.KantorWilayah,
+                    NamaCabang = i.NamaCabang,
+                    NamaOutlet = i.NamaOutlet,
+                    JumlahEnrollmentKTP = i.JumlahEnrollmentKTP,
+                    JumlahEnrollmentFR = i.JumlahEnrollmentFR
+                });
+                #endregion end
+
+            }
+            res.Data = data;
+
+            //var Initiate = new GridResponse<MonitoringEnroll>();
+
+            //Initiate.Data = res;
+            //Initiate.Count = res.Count();
+
+            //return new ServiceResponse<GridResponse<MonitoringEnrollNew>>
+            //{
+            //    Data = res,
+            //    Message = nameof(ServiceResponseStatus.SUKSES),
+            //    Status = (int)ServiceResponseStatus.SUKSES
+            //};
+            return new ServiceResponse<GridResponseNew<MonitoringEnrollNew>>
+            {
+                Data = res,
+                Message = nameof(ServiceResponseStatus.SUKSES),
+                Status = (int)ServiceResponseStatus.SUKSES
+            };
+        }
+
+        private static string ConvertUrlToB64(string path)
+        {
+            try
+            {
+                using WebClient webClient = new();
+
+                var b64 = webClient.DownloadData(path ?? "");
+
+                var b64String = "";
+
+                using (var r = new StreamReader(new MemoryStream(b64)))
+                {
+                    var text = r.ReadToEnd();
+                    b64String = text.Decrypt(Phrase.FileEncryption);
+                }
+
+                return b64String;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message.ToString();
+            }
+        }
+
+        private static string ConvertUrlToB64FingerEncOnly(string path)
+        {
+            try
+            {
+                using WebClient webClient = new();
+
+                var b64 = webClient.DownloadData(path ?? "");
+
+                return Convert.ToBase64String(b64);
+            }
+            catch (Exception)
+            {
+                return "";
+            }
+        }
+    }
+}

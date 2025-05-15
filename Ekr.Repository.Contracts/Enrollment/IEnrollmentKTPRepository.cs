@@ -1,0 +1,94 @@
+﻿using Ekr.Core.Entities;
+using Ekr.Core.Entities.DataEnrollment;
+using Ekr.Core.Entities.DataEnrollment.ViewModel;
+using Ekr.Core.Entities.DataKTP;
+using Ekr.Core.Entities.DataMaster.AlatReader;
+using Ekr.Core.Entities.DataMaster.DataReader.Entity;
+using Ekr.Core.Entities.DataMaster.Utility;
+using Ekr.Core.Entities.Enrollment;
+using Ekr.Core.Entities.ThirdParty;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace Ekr.Repository.Contracts.Enrollment
+{
+    public interface IEnrollmentKTPRepository
+    {
+        void InsertEnrollFlow(Tbl_DataKTP_Demografis demografis, Tbl_DataKTP_Demografis_Log demografis_Log,
+            Tbl_DataKTP_Photo photo,
+            Tbl_DataKTP_Photo_Log photo_Log, Tbl_DataKTP_Signature signature,
+            Tbl_DataKTP_Signature_Log signature_Log, Tbl_DataKTP_PhotoCam photoCam,
+            Tbl_DataKTP_PhotoCam_Log photoCam_Log, List<Tbl_DataKTP_Finger> finger, List<Tbl_DataKTP_Finger_Log> finger_Log,
+            Tbl_DataKTP_Photo exPhoto, Tbl_DataKTP_Signature exSignature, Tbl_DataKTP_PhotoCam exPhotoCam,
+            List<Tbl_DataKTP_Finger> exFinger, Tbl_Mapping_Pegawai_KTP pegawai_KTP,
+            Tbl_MasterAlatReaderLog readerLog, List<Tbl_DataKTP_Finger_Employee> fingerEmployee, List<Tbl_DataKTP_Finger_Employee> exFingerEmployee);
+        Task<(bool status, string msg)> InsertEnrollFlow2(Tbl_DataKTP_Demografis demografis, Tbl_DataKTP_Demografis_Log demografis_Log,
+            Tbl_DataKTP_Photo photo,
+            Tbl_DataKTP_Photo_Log photo_Log, Tbl_DataKTP_Signature signature,
+            Tbl_DataKTP_Signature_Log signature_Log, Tbl_DataKTP_PhotoCam photoCam,
+            Tbl_DataKTP_PhotoCam_Log photoCam_Log, List<Tbl_DataKTP_Finger> finger, List<Tbl_DataKTP_Finger_Employee> finger_Employee,
+            List<Tbl_DataKTP_Finger_Log> finger_Log, List<Tbl_DataKTP_Finger_Employee_Log> finger_Employee_Log,
+            Tbl_DataKTP_Photo exPhoto, Tbl_DataKTP_Signature exSignature, Tbl_DataKTP_PhotoCam exPhotoCam,
+            List<Tbl_DataKTP_Finger> exFinger, List<Tbl_DataKTP_Finger_Employee> exFingerEmployee, Tbl_MasterAlatReaderLog readerLog, Tbl_Mapping_Pegawai_KTP dataMapping);
+
+        Task<(bool status, string msg)> InsertEnrollFlow3(Tbl_DataKTP_Demografis demografis, Tbl_DataKTP_Demografis_Log demografis_Log,
+            Tbl_DataKTP_Photo photo,
+            Tbl_DataKTP_Photo_Log photo_Log, Tbl_DataKTP_Signature signature,
+            Tbl_DataKTP_Signature_Log signature_Log, Tbl_DataKTP_PhotoCam photoCam,
+            Tbl_DataKTP_PhotoCam_Log photoCam_Log, List<Tbl_DataKTP_Finger> finger, List<Tbl_DataKTP_Finger_Log> finger_Log,
+            Tbl_DataKTP_Photo exPhoto, Tbl_DataKTP_Signature exSignature, Tbl_DataKTP_PhotoCam exPhotoCam,
+            List<Tbl_DataKTP_Finger> exFinger, Tbl_Mapping_Pegawai_KTP pegawai_KTP,
+            Tbl_MasterAlatReaderLog readerLog, List<Tbl_DataKTP_Finger_Employee> fingerEmployee, List<Tbl_DataKTP_Finger_Employee> exFingerEmployee, List<Tbl_DataKTP_Finger_Employee_Log> finger_Employee_Log);
+
+        Task<(bool status, string msg)> InsertEnrollFlow4(Tbl_DataKTP_Demografis demografis, Tbl_DataKTP_Demografis_Log demografis_Log,
+            Tbl_DataKTP_Photo photo,
+            Tbl_DataKTP_Photo_Log photo_Log, Tbl_DataKTP_Signature signature,
+            Tbl_DataKTP_Signature_Log signature_Log, Tbl_DataKTP_PhotoCam photoCam,
+            Tbl_DataKTP_PhotoCam_Log photoCam_Log, List<Tbl_DataKTP_Finger> finger, List<Tbl_DataKTP_Finger_Log> finger_Log,
+            Tbl_DataKTP_Photo exPhoto, Tbl_DataKTP_Signature exSignature, Tbl_DataKTP_PhotoCam exPhotoCam,
+            List<Tbl_DataKTP_Finger> exFinger, Tbl_Mapping_Pegawai_KTP pegawai_KTP,
+            Tbl_MasterAlatReaderLog readerLog, List<Tbl_DataKTP_Finger_Employee> fingerEmployee, List<Tbl_DataKTP_Finger_Employee> exFingerEmployee, List<Tbl_DataKTP_Finger_Employee_Log> finger_Employee_Log);
+
+        void UpdatesEnrollFlow(Tbl_DataKTP_Demografis demografis, Tbl_DataKTP_Demografis_Log demografis_Log,
+            Tbl_DataKTP_Photo photo,
+            Tbl_DataKTP_Photo_Log photo_Log, Tbl_DataKTP_Signature signature,
+            Tbl_DataKTP_Signature_Log signature_Log, Tbl_DataKTP_PhotoCam photoCam,
+            Tbl_DataKTP_PhotoCam_Log photoCam_Log, Tbl_DataKTP_Finger finger_kanan, Tbl_DataKTP_Finger finger_kiri,
+            Tbl_DataKTP_Finger_Log finger_kanan_log, Tbl_DataKTP_Finger_Log finger_kiri_log,
+            Tbl_DataKTP_Finger_Employee fingerEmployee_kanan, Tbl_DataKTP_Finger_Employee fingerEmployee_kiri,
+            Tbl_DataKTP_Finger_Employee_Log fingerEmployee_kanan_Log, Tbl_DataKTP_Finger_Employee_Log fingerEmployee_kiri_Log,
+            Tbl_MasterAlatReaderLogActvity LogActivity, Tbl_MasterAlatReaderLog ReaderLog);
+        void UpdatesPhotoCam(Tbl_DataKTP_PhotoCam photoCam, Tbl_DataKTP_PhotoCam_Log photoCam_Log,
+            Tbl_MasterAlatReaderLogActvity LogActivity, Tbl_MasterAlatReaderLog ReaderLog);
+        Task<string> MigrateDataEnroll(string apikey, bool isProxy, string ipProxy);
+        Task<IEnumerable<Tbl_DataKTP_Finger>> GetDataKtpFingersJpgFormattedbyNIK(string nik);
+        Task<IEnumerable<Tbl_DataKTP_Demografis>> GetDataDemografisByNik(string nik);
+        Task<GridResponse<MonitoringEnroll>> GetDBEnroll(DataEnrollTempFilter filter);
+        Task<GridResponse<MonitoringEnroll>> GetDBEnrollSec(DataEnrollTempFilter filter);
+        Task<bool> IsNppEnrolled(string npp);
+        Task<string> GetNIK(string npp);
+        Task<int> GetPegawaiByNpp(string npp);
+        Task<int> GetUnitByCode(string code);
+        Task<ConvertLatLong_ViewModels> ConvertLatLong(string apikey, string alamatEncode, bool isProxy, string ipProxy);
+        Task<GridResponse<InboxDataEnrollVM>> LoadDataInboxEnroll(InboxDataEnrollFilterVM inboxDataEnrollFilterVM);
+        Task<List<Tbl_LogHistoryPengajuanVM>> LoadDataHistoryPengajuan(HistorySubmissionFilterVM historySubmissionFilterVM);
+        long InsertKtpFingerLog(Tbl_DataKTP_Finger_Log log);
+        Task<IEnumerable<Tbl_DataKTP_Finger>> GetDataKtpFingersJpgFormatted();
+        Task<int> UpdateDataKtpFingerAsync(Tbl_DataKTP_Finger data);
+        Task<Tbl_ThirdPartyLog> CreateThirdPartyLog(Tbl_ThirdPartyLog req);
+        Task<IEnumerable<ExportMonitoringEnrollTest>> ExportDBEnroll(ExportDataEnrollTempFilter filter);
+        Task<IEnumerable<ExportMonitoringEnrollNew>> ExportDBEnrollNew(ExportDataEnrollTempFilter filter);
+        Task<IEnumerable<ExportMonitoringEnrollNew>> ExportDBEnrollNew2(ExportDataEnrollTempFilterV5 filter);
+        Task<IEnumerable<ExportMonitoringEnroll>> ExportDBEnrollFR(ExportDataEnrollTempFilter filter);
+        Task<GridResponse<MonitoringEnroll>> GetDBEnrollV2(DataEnrollTempFilterV2 filter);
+        //Task<GridResponse<MonitoringEnrollNew>> GetDBEnrollV3(DataEnrollTempFilterV2 filter);
+        //Task<GridResponse<MonitoringEnrollNew>> GetDBEnrollV3(DataEnrollTempFilterV4 filter);
+        Task<GridResponseNew<MonitoringEnrollNew>> GetDBEnrollV4(DataEnrollTempFilterV4 filter);
+        Task<Tbl_MappingNIK_Pegawai> IsEmployee(string nik);
+        Task<Tbl_DataNIK_Pegawai> MappingNppNik(string npp);
+        Task<Tbl_Mapping_Pegawai_KTP> MappingNppNikByNik(string nik);
+        Task<IEnumerable<Tbl_DataKTP_Finger>> GetISO(string nik);
+        Task<IEnumerable<Tbl_DataKTP_Finger>> GetISOEmp(string nik);
+        Task<string> GetNikByCif(string cif);
+    }
+}

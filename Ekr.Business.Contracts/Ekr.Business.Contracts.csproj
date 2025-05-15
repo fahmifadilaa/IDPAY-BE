@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ekr.Core\Ekr.Core.csproj" />
+    <ProjectReference Include="..\Ekr.Repository.Contracts\Ekr.Repository.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

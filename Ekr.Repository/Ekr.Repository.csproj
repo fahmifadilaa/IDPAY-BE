@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.2" />
+    <PackageReference Include="Dapper" Version="2.0.90" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ekr.Core\Ekr.Core.csproj" />
+    <ProjectReference Include="..\Ekr.Dapper.Connection.Contracts\Ekr.Dapper.Connection.Contracts.csproj" />
+    <ProjectReference Include="..\Ekr.Dapper.Connection\Ekr.Dapper.Connection.csproj" />
+    <ProjectReference Include="..\Ekr.Repository.Contracts\Ekr.Repository.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

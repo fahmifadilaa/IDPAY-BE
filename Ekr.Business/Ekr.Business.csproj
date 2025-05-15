@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.9" />
+    <PackageReference Include="NPOI" Version="2.5.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ekr.Business.Contracts\Ekr.Business.Contracts.csproj" />
+    <ProjectReference Include="..\Ekr.Core\Ekr.Core.csproj" />
+    <ProjectReference Include="..\Ekr.Repository.Contracts\Ekr.Repository.Contracts.csproj" />
+    <ProjectReference Include="..\Ekr.Services\Ekr.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DataReader\" />
+  </ItemGroup>
+
+</Project>

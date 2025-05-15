@@ -1,0 +1,286 @@
+﻿using Dapper;
+using Ekr.Core.Entities;
+using Ekr.Core.Entities.DataEnrollment;
+using Ekr.Core.Entities.DataEnrollment.ViewModel;
+using Ekr.Dapper.Connection.Contracts.Sql;
+using Ekr.Repository.Contracts.DataEnrollment;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Ekr.Repository.DataEnrollment
+{
+    public class DashboardDataEnrollNoMatchingRepository : BaseRepository, IDashboardDataEnrollNoMatchingRepository
+    {
+        public DashboardDataEnrollNoMatchingRepository(IEKtpReaderBackendDb con) : base(con) { }
+
+        public async Task<IEnumerable<JobChartDataVM>> GetJobChart(UnitIdsFilterVM req)
+        {
+            const string sp = "[ProcJobChartFR]";
+
+            //var data = await Db.WithConnectionAsync(db => db.QueryAsync<JobChartDataVM>(sp, commandType: CommandType.StoredProcedure));
+            var data = await Db.WithConnectionAsync(db => db.QueryAsync<JobChartDataVM>(sp, new
+            {
+                UnitIds = req.UnitIds,
+                Jenis = req.Jenis
+            }, commandType: CommandType.StoredProcedure));
+
+            return data;
+        }
+        public async Task<IEnumerable<TypeEnrollmentVM>> GetTypeEnrollmentChart(UnitIdsFilterVM req)
+        {
+            const string sp = "[sp_EnrollmentMenuStatistics]";
+
+            //var data = await Db.WithConnectionAsync(db => db.QueryAsync<JobChartDataVM>(sp, commandType: CommandType.StoredProcedure));
+            var data = await Db.WithConnectionAsync(db => db.QueryAsync<TypeEnrollmentVM>(sp, new
+            {
+                UnitIds = req.UnitIds
+            }, commandType: CommandType.StoredProcedure));
+
+            return data;
+        }
+
+        public async Task<IEnumerable<ChannelEnrollmentVM>> GetChannelEnrollmentChart(UnitIdsFilterVM req)
+        {
+            const string sp = "[sp_EnrollmentMenuStatisticsChannelFR]";
+
+            //var data = await Db.WithConnectionAsync(db => db.QueryAsync<JobChartDataVM>(sp, commandType: CommandType.StoredProcedure));
+            var data = await Db.WithConnectionAsync(db => db.QueryAsync<ChannelEnrollmentVM>(sp, new
+            {
+                UnitIds = req.UnitIds,
+                Jenis = req.Jenis
+            }, commandType: CommandType.StoredProcedure));
+
+            return data;
+        }
+        
+        public async Task<IEnumerable<StatusEnrollmentVM>> GetStatusEnrollmentChart(UnitIdsFilterVM req)
+        {
+            const string sp = "[sp_EnrollmentMenuStatisticsStatusFR]";
+
+            //var data = await Db.WithConnectionAsync(db => db.QueryAsync<JobChartDataVM>(sp, commandType: CommandType.StoredProcedure));
+            var data = await Db.WithConnectionAsync(db => db.QueryAsync<StatusEnrollmentVM>(sp, new
+            {
+                UnitIds = req.UnitIds,
+                Jenis = req.Jenis
+            }, commandType: CommandType.StoredProcedure));
+
+            return data;
+        }
+
+        public async Task<IEnumerable<ReligionChartDataVM>> GetReligionChart(UnitIdsFilterVM req)
+        {
+            const string sp = "[ProcReligionChartFR]";
+
+            //var data = await Db.WithConnectionAsync(db => db.QueryAsync<ReligionChartDataVM>(sp, commandType: CommandType.StoredProcedure));
+            var data = await Db.WithConnectionAsync(db => db.QueryAsync<ReligionChartDataVM>(sp, new
+            {
+                UnitIds = req.UnitIds,
+                Jenis = req.Jenis
+            }, commandType: CommandType.StoredProcedure));
+
+            return data;
+        }
+
+        public async Task<IEnumerable<BornGenerationChartDataVM>> GetBornGenerationChart(UnitIdsFilterVM req)
+        {
+            const string sp = "[ProcBornGenerationChartFR]";
+
+            //var data = await Db.WithConnectionAsync(db => db.QueryAsync<BornGenerationChartDataVM>(sp, commandType: CommandType.StoredProcedure));
+            var data = await Db.WithConnectionAsync(db => db.QueryAsync<BornGenerationChartDataVM>(sp, new
+            {
+                UnitIds = req.UnitIds,
+                Jenis = req.Jenis
+            }, commandType: CommandType.StoredProcedure));
+
+            return data;
+        }
+
+        public async Task<IEnumerable<AgeSegmentationChartDataVM>> GetAgeSegmentationChart(UnitIdsFilterVM req)
+        {
+            const string sp = "[ProcAgeSegmentationChartFR]";
+
+            //var data = await Db.WithConnectionAsync(db => db.QueryAsync<AgeSegmentationChartDataVM>(sp, commandType: CommandType.StoredProcedure));
+            var data = await Db.WithConnectionAsync(db => db.QueryAsync<AgeSegmentationChartDataVM>(sp, new
+            {
+                UnitIds = req.UnitIds,
+                Jenis = req.Jenis
+            }, commandType: CommandType.StoredProcedure));
+
+            return data;
+        }
+
+        public async Task<GridResponse<MonitoringEnroll>> GetDBEnrollNoMatching(DataEnrollTempFilter filter)
+        {
+            const string proc = "[ProcMonitoringEnrollDataAllNewV2]";
+
+            var val = new
+            {
+                SColumn = string.IsNullOrWhiteSpace(filter.SortColumn) ? "Id" : filter.SortColumn,
+                SColumnValue = string.IsNullOrWhiteSpace(filter.SortColumnDir) ? "desc" : filter.SortColumnDir,
+                Nama = string.IsNullOrWhiteSpace(filter.Nama) ? "" : filter.Nama,
+                NIK = string.IsNullOrWhiteSpace(filter.NIK) ? "" : filter.NIK,
+                Page = filter.PageNumber,
+                Rows = filter.PageSize,
+                filter.LoginPegawaiId,
+                filter.LoginRoleId,
+                filter.LoginUnitId,
+                filter.UnitIds,
+                Jenis = filter.Jenis
+
+            };
+
+            var res = await Db.WithConnectionAsync(c => c.QueryAsync<MonitoringEnroll>(proc, val, commandType: CommandType.StoredProcedure))
+                .ConfigureAwait(false);
+
+            const string procCount = "[ProcMonitoringEnrollTotalAllNewV2]";
+
+            var count = await Db.WithConnectionAsync(c => c.ExecuteScalarAsync<int>(procCount, new
+            {
+                Nama = string.IsNullOrWhiteSpace(filter.Nama) ? "" : filter.Nama,
+                NIK = string.IsNullOrWhiteSpace(filter.NIK) ? "" : filter.NIK,
+                filter.LoginPegawaiId,
+                filter.LoginRoleId,
+                filter.LoginUnitId,
+                filter.UnitIds, 
+                Jenis = filter.Jenis
+            }, commandType: CommandType.StoredProcedure))
+                .ConfigureAwait(false);
+
+            return new GridResponse<MonitoringEnroll>
+            {
+                Count = count,
+                Data = res
+            };
+        }
+
+        public async Task<GridResponse<EnrollPerUnitVM>> GetEnrollPerUnit(EnrollPerUnitFilterVM req)
+        {
+            const string sp = "ProcEnrollPerUnit";
+            var values = new
+            {
+                req.Name,
+                req.Type,
+                SColumn = req.SortColumn,
+                SColumnValue = req.SortColumnDir,
+                Page =  req.PageNumber,
+                Rows = req.PageSize
+            };
+            var data = Db.WithConnectionAsync(db => db.QueryAsync<EnrollPerUnitVM>(sp, values, commandType: CommandType.StoredProcedure));
+
+            const string spCount = "[ProcEnrollPerUnitNum]";
+            var valuesCount = new
+            {
+                req.Name,
+                req.Type
+            };
+            var count = Db.WithConnectionAsync(db => db.ExecuteScalarAsync<int>(spCount, valuesCount, commandType: CommandType.StoredProcedure));
+
+            await Task.WhenAll(data, count).ConfigureAwait(false);
+
+            return new GridResponse<EnrollPerUnitVM>
+            {
+                Count = count.Result,
+                Data = data.Result
+            };
+        }
+
+        public async Task<EnrollKTPVM> DetailData(EnrollKTPFIlterVM req)
+        {
+            const string sp = "[ProcViewDataGetDataByNIK]";
+
+            var data = await Db.WithConnectionAsync(db => db.QueryFirstOrDefaultAsync<EnrollKTPVM>(sp, new {
+                NIK = req.nik
+            } ,commandType: CommandType.StoredProcedure));
+
+            return data;
+        }
+
+        public async Task<GridResponse<DahboardEnrollmentPG>> DashboardEnrollList(DahboardEnrollmentPGFilterVM req)
+        {
+            const string sp = "ProcDashboardEnrollList";
+            var values = new
+            {
+                Name = req.Nama,
+                req.Provinsi,
+                req.UnitCode,
+                req.Role,
+                SColumn = req.SortColumn,
+                SColumnValue = req.SortColumnDir,
+                Page = req.PageNumber,
+                Rows = req.PageSize
+            };
+            var data = Db.WithConnectionAsync(db => db.QueryAsync<DahboardEnrollmentPG>(sp, values, commandType: CommandType.StoredProcedure));
+
+            const string spCount = "[ProcDashboardEnrollListCount]";
+            var valuesCount = new
+            {
+                Name = req.Nama,
+                req.Provinsi,
+                req.UnitCode,
+                req.Role
+            };
+            var count = Db.WithConnectionAsync(db => db.ExecuteScalarAsync<int>(spCount, valuesCount, commandType: CommandType.StoredProcedure));
+
+            await Task.WhenAll(data, count).ConfigureAwait(false);
+
+            return new GridResponse<DahboardEnrollmentPG>
+            {
+                Count = count.Result,
+                Data = data.Result
+            };
+        }
+
+        public async Task<GridResponse<MonitoringEnroll>> GetDBEnrollNoMatchingFR(DataEnrollTempFilter filter)
+        {
+            //const string proc = "[ProcExportMonitoringEnrollDataV2]";
+            const string proc = "[ProcDasboardMonitoringEnrollDataFR]";
+
+            var val = new
+            {
+                SColumn = string.IsNullOrWhiteSpace(filter.SortColumn) ? "Id" : filter.SortColumn,
+                SColumnValue = string.IsNullOrWhiteSpace(filter.SortColumnDir) ? "desc" : filter.SortColumnDir,
+                Nama = string.IsNullOrWhiteSpace(filter.Nama) ? "" : filter.Nama,
+                NIK = string.IsNullOrWhiteSpace(filter.NIK) ? "" : filter.NIK,
+                Page = filter.PageNumber,
+                Rows = filter.PageSize,
+                filter.LoginPegawaiId,
+                filter.LoginRoleId,
+                filter.LoginUnitId,
+                filter.UnitIds,
+                Jenis = filter.Jenis
+
+            };
+
+            var valCount = new
+            {
+                SColumn = string.IsNullOrWhiteSpace(filter.SortColumn) ? "Id" : filter.SortColumn,
+                SColumnValue = string.IsNullOrWhiteSpace(filter.SortColumnDir) ? "desc" : filter.SortColumnDir,
+                Nama = string.IsNullOrWhiteSpace(filter.Nama) ? "" : filter.Nama,
+                NIK = string.IsNullOrWhiteSpace(filter.NIK) ? "" : filter.NIK,
+                filter.LoginPegawaiId,
+                filter.LoginRoleId,
+                filter.LoginUnitId,
+                filter.UnitIds,
+                Jenis = filter.Jenis
+
+            };
+
+            var res = await Db.WithConnectionAsync(c => c.QueryAsync<MonitoringEnroll>(proc, val, commandType: CommandType.StoredProcedure))
+                .ConfigureAwait(false);
+
+            var resCount = await Db.WithConnectionAsync(c => c.QueryAsync<MonitoringEnroll>(proc, valCount, commandType: CommandType.StoredProcedure))
+                .ConfigureAwait(false);
+
+
+
+            return new GridResponse<MonitoringEnroll>
+            {
+                Count = resCount.Count(),
+                Data = res
+            };
+        }
+
+    }
+}
