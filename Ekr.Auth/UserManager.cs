@@ -1864,7 +1864,7 @@ namespace Ekr.Auth
                 }
                 if (_.data.npp == null && (_.err ?? "NULL").Contains("The LDAP server is unavailable. ") && _.status == true )
                 {
-                    _.data.npp = "Service LDAP Sedang Sibuk. ";
+                    _.data.npp = "Gagal Menghubungkan Ke LDAP ";
                 }
                 return _.data;
             }

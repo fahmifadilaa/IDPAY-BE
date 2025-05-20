@@ -23,9 +23,8 @@ public class LdapConnectionPool : IAsyncDisposable
     public LdapConnectionPool(IOptions<LDAPConfig> config)
     {
         var ldapConfig = config.Value;
-
-        _host = ldapConfig.Url.Replace("LDAP://", "").Replace("ldap://", "");
-        _port = 389; // bisa diubah kalau ada port di config
+        _host = new Uri(ldapConfig.Url).Host;
+        _port = ldapConfig.Port;
         _maxSize = ldapConfig.MaxPoolSize > 0 ? ldapConfig.MaxPoolSize : 10;
         _connectionTimeout = TimeSpan.FromSeconds(ldapConfig.ConnTimeOut);
         _PoolTimeOut = TimeSpan.FromSeconds(ldapConfig.PoolTimeOut);

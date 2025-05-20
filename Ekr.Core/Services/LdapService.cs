@@ -28,9 +28,7 @@ public class LdapService : ILdapService
     public async Task<(bool status, string err, LdapInfo data)> LdapAuthAsync(LDAPConfig conf, string sNPP, string password)
     {
         var ldapInfo = new LdapInfo();
-        string host = conf.Url.Replace("LDAP://", "").Replace("ldap://", "");
         string userDn = $"uid={sNPP},{conf.LdapHierarchy}";
-        //TimeSpan PoolTimeOut  = TimeSpan.FromSeconds(conf.PoolTimeOut);
 
 
         
