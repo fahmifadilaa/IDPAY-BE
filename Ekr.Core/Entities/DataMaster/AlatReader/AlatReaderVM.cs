@@ -226,10 +226,12 @@ namespace Ekr.Core.Entities.DataMaster.AlatReader
         [RegularExpression("^[0-9.]*$", ErrorMessage = "Bad Request")]
         public string lastIp { get; set; }
         public int UpdatedBy_Id { get; set; }
-        [RegularExpression("^[0-9/-]*$", ErrorMessage = "Bad Request")]
+        [RegularExpression(@"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}$", ErrorMessage = "Bad Request")]
         public string lastActive { get; set; }
-        [RegularExpression("^[0-9/-]*$", ErrorMessage = "Bad Request")]
+
+        [RegularExpression(@"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}$", ErrorMessage = "Bad Request")]
         public string lastUsed { get; set; }
+
     }
 
     public class UpdateStatusManifestAlatReader

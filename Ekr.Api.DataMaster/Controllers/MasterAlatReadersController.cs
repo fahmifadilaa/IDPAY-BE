@@ -601,6 +601,16 @@ namespace Ekr.Api.DataMaster.Controllers
         {
             req.UpdatedBy_Id = 24;
 
+            var reqAlatReader = new ReqUpdateMasterAlatReader
+            {
+                uid = req.uid,
+                status = req.status,
+                lastActive = req.lastActive,    
+                lastIp = req.lastIp,    
+                lastUsed = req.lastUsed,
+                UpdatedBy_Id = req.UpdatedBy_Id         
+            };
+
             if (req.uid == null || req.uid == "")
             {
                 return new ServiceResponse<ReqUpdateMasterAlatReader>
@@ -612,7 +622,7 @@ namespace Ekr.Api.DataMaster.Controllers
             }
             else
             {
-                _ = await _alatReaderRepository.UpdateStatusAlatMasterReader(req);
+                _ = await _alatReaderRepository.UpdateStatusAlatMasterReader(reqAlatReader);
             }
 
             return new ServiceResponse<ReqUpdateMasterAlatReader>
