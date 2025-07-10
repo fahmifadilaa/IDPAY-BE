@@ -23,6 +23,7 @@
 		<ProjectReference Include="..\Ekr.Auth.Contracts\Ekr.Auth.Contracts.csproj" />
 		<ProjectReference Include="..\Ekr.Core\Ekr.Core.csproj" />
 		<ProjectReference Include="..\Ekr.Dependency\Ekr.Dependency.csproj" />
+		<ProjectReference Include="..\UdpClient\UdpClient.csproj" />
 	</ItemGroup>
 
 </Project>

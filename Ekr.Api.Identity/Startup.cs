@@ -8,6 +8,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using UdpClient.Services;
+using UdpClient;
+using Microsoft.Extensions.Options;
 
 namespace Ekr.Api.Identity
 {
@@ -26,6 +29,8 @@ namespace Ekr.Api.Identity
             //add cors
             services.AddCors(options =>
             options.AddPolicy("AllowAll", builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+
+            services.AddSingleton<UdpLogService>();
 
             var ioc = new IoCConfiguration(services);
             ioc.LoadConfiguration(Configuration);
