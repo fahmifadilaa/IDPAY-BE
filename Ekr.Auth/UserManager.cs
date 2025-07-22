@@ -2,6 +2,7 @@
 using Ekr.Core.Configuration;
 using Ekr.Core.Constant;
 using Ekr.Core.Entities.Auth;
+using Ekr.Core.Entities.DataMaster.AlatReader;
 using Ekr.Core.Entities.DataMaster.Lookup;
 using Ekr.Core.Entities.DataMaster.Unit;
 using Ekr.Core.Entities.DataMaster.User;
@@ -201,20 +202,66 @@ namespace Ekr.Auth
                     #region SSO Login with LDAP ISU -- dikomen dulu ampe ISU nya clear
                     if (datas == null || datas.LDAPLogin == true)
                     {
-                        if (dataLdap.npp == null || dataLdap.npp.Contains("INCORRECT") || dataLdap.npp.Contains("UNWILLING") || dataLdap.IbsRole == null || dataLdap.IbsRole.ToUpper() == "NULL")
+                        //if ((dataLdap?.npp == null || dataLdap.npp?.Contains("INCORRECT") == true || dataLdap.npp?.Contains("UNWILLING") == true || dataLdap?.IbsRole == null || dataLdap.IbsRole?.ToUpper() == "NULL"))
+                        //{
+                        //    return ("", _errorMessageConfig.CredentialSalah, "");
+                        //}
+
+                        //LdapUnit = await _unitRepository.GetByKodeOutlet(dataLdap.kode_outlet);
+                        //if (LdapUnit == null)
+                        //{
+                        //    return ("", _errorMessageConfig.CredentialSalah, "");
+                        //}
+                        // Error Response and null handling 
+
+                        if (string.IsNullOrEmpty(dataLdap?.npp) && !string.IsNullOrEmpty(dataLdap?.AccountStatus) || ((dataLdap?.npp ?? "NULL").Contains("credential") && !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
                         {
                             return ("", _errorMessageConfig.CredentialSalah, "");
                         }
 
-                        LdapUnit = await _unitRepository.GetByKodeOutlet(dataLdap.kode_outlet);
-                        if (LdapUnit == null)
-                        {
-                            return ("", _errorMessageConfig.CredentialSalah, "");
+                        if ((dataLdap?.npp ?? "").Contains("LDAP"))
+                        {                           
+                            return ("", _errorMessageConfig.LDAPService, "");
                         }
-                        LdapLookup = await _lookupRepository.GetByType(dataLdap.IbsRole.ToUpper());
-                        if (LdapLookup == null)
+                         
+                        if (!string.IsNullOrEmpty(dataLdap?.kode_outlet) && dataLdap?.npp == nik)
                         {
-                            return ("", _errorMessageConfig.CredentialSalah, "");
+                            LdapUnit = await _unitRepository.GetByKodeOutlet(dataLdap?.kode_outlet);
+
+                            if (LdapUnit == null)
+                            {
+                               return ("", _errorMessageConfig.UnitNotRegistered, "");
+                            }
+
+                        }
+                        else if (string.IsNullOrEmpty(dataLdap?.kode_outlet) && dataLdap?.npp == nik )
+                        {
+                            LdapUnit = null;
+                            return ("", _errorMessageConfig.LDAPUnitNull, "");
+                            //return ("", _errorMessageConfig.CredentialSalah, "");
+                        }
+
+                        //LdapLookup = await _lookupRepository.GetByType(dataLdap.IbsRole?.ToUpper());
+                        //if (LdapLookup == null)
+                        //{
+                        //    return ("", _errorMessageConfig.CredentialSalah, "");
+                        //}
+                        // Error Response And Null Handling
+
+                        if (!string.IsNullOrEmpty(dataLdap?.IbsRole ) && dataLdap?.npp == nik && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI")) // null handling jika dari ldapnya rolenya  null
+                        {
+                            LdapLookup = await _lookupRepository.GetByType(dataLdap.IbsRole?.ToUpper());
+
+                            if (LdapLookup == null)
+                            {
+                                return ("", _errorMessageConfig.RoleNotRegistered, "");
+                            }
+                        }
+                        else if (string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
+                        {
+                            LdapLookup = null;
+                            return ("", _errorMessageConfig.LDAPRoleNull, "");
+                            //return ("", _errorMessageConfig.CredentialSalah, ""); Error Handling Mapping
                         }
 
                         createPegawai = new UserVM
@@ -230,7 +277,7 @@ namespace Ekr.Auth
                             Ldaplogin = true
                         };
 
-                        if (dataLdap.AccountStatus.ToUpper() == "DISABLED" || dataLdap.IbsRole.ToUpper().Contains("CUTI"))
+                        if ((dataLdap?.AccountStatus ?? "").ToUpper() == "DISABLED" || (dataLdap?.IbsRole ?? "").ToUpper().Contains("CUTI") || (dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
                         {
                             createPegawai.IsActive = false;
                         }
@@ -271,13 +318,15 @@ namespace Ekr.Auth
                         }
                         #endregion
 
-                        if (dataLdap.AccountStatus.ToUpper() == "DISABLED")
+                        if ((dataLdap?.AccountStatus ?? "").ToUpper() == "DISABLED")
                         {
-                            return ("", _errorMessageConfig.CredentialSalah, "");
+                            return ("", _errorMessageConfig.AccountNotActive, "");                            
+                            //return ("", _errorMessageConfig.CredentialSalah, ""); Error Handling Mapping
                         }
-                        if (dataLdap.IbsRole.ToUpper().Contains("CUTI"))
+                        if ((dataLdap?.IbsRole ?? "").ToUpper().Contains("CUTI") || (dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
                         {
-                            return ("", _errorMessageConfig.CredentialSalah, "");
+                            return ("", _errorMessageConfig.AccountCuti, "");
+                            //return ("", _errorMessageConfig.CredentialSalah, ""); Error Handling Mapping
                         }
                     }
                     #endregion
@@ -465,7 +514,8 @@ namespace Ekr.Auth
 
             var updatedSession = new Tbl_Login_Session ();
             var newSession = new Tbl_Login_Session ();
-            
+
+
             if (checkSession != null) 
             {
                 addedAttempt = checkSession.Attempt + 1;
@@ -508,72 +558,178 @@ namespace Ekr.Auth
                                 #region SSO Login with LDAP ISU -- dikomen dulu ampe ISU nya clear
                                 if (datas == null || datas.LDAPLogin == true)
                                 {
-                                    if (dataLdap.npp == null || dataLdap.npp.Contains("INCORRECT") || dataLdap.npp.Contains("UNWILLING") || dataLdap.IbsRole == null || dataLdap.IbsRole.ToUpper() == "NULL" &&  dataLdap.npp != "Service LDAP Sedang Sibuk. ")
+                                    if (string.IsNullOrEmpty(dataLdap?.npp) && !string.IsNullOrEmpty(dataLdap?.AccountStatus) || ((dataLdap?.npp ?? "NULL").Contains("credential") && (dataLdap?.npp ?? "NULL") != "Gagal Terhubung Dengan LDAP."))
                                     {
-                                        updatedSession = new Tbl_Login_Session
+                                        if (checkSession != null)
                                         {
-                                            Id = checkSession.Id,
-                                            npp = nik,
-                                            IpAddress = ipAddress,
-                                            Attempt = addedAttempt,
-                                            LastActive = checkSession.LastActive,
-                                            LastAttempt = DateTime.Now
-                                        };
-
-                                        await _authRepository.UpdateSessionLogin(updatedSession);
+                                            updatedSession = new Tbl_Login_Session
+                                            {
+                                                Id = checkSession.Id,
+                                                npp = nik,
+                                                IpAddress = ipAddress,
+                                                Attempt = addedAttempt,
+                                                LastActive = checkSession.LastActive,
+                                                LastAttempt = DateTime.Now
+                                            };
+                                            await _authRepository.UpdateSessionLogin(updatedSession);
+                                        }
 
                                         return ("", _errorMessageConfig.CredentialSalah, "");
                                     }
 
-                                    LdapUnit = await _unitRepository.GetByKodeOutlet(dataLdap.kode_outlet);
-                                    if (LdapUnit == null)
+                                    if ((dataLdap?.npp ?? "NULL").Contains("LDAP"))
                                     {
-                                        updatedSession = new Tbl_Login_Session
+                                        if (checkSession != null)
                                         {
-                                            Id = checkSession.Id,
-                                            npp = nik,
-                                            IpAddress = ipAddress,
-                                            Attempt = addedAttempt,
-                                            LastActive = checkSession.LastActive,
-                                            LastAttempt = DateTime.Now
-                                        };
+                                            updatedSession = new Tbl_Login_Session
+                                            {
+                                                Id = checkSession.Id,
+                                                npp = nik,
+                                                IpAddress = ipAddress,
+                                                Attempt = addedAttempt,
+                                                LastActive = checkSession.LastActive,
+                                                LastAttempt = DateTime.Now
+                                            };
+                                            await _authRepository.UpdateSessionLogin(updatedSession);
+                                        }
 
-                                        await _authRepository.UpdateSessionLogin(updatedSession);
-
-                                        return ("", _errorMessageConfig.CredentialSalah, "");
-                                    }
-                                    LdapLookup = await _lookupRepository.GetByType(dataLdap.IbsRole.ToUpper());
-                                    if (LdapLookup == null)
-                                    {
-                                        updatedSession = new Tbl_Login_Session
-                                        {
-                                            Id = checkSession.Id,
-                                            npp = nik,
-                                            IpAddress = ipAddress,
-                                            Attempt = addedAttempt,
-                                            LastActive = checkSession.LastActive,
-                                            LastAttempt = DateTime.Now
-                                        };
-
-                                        await _authRepository.UpdateSessionLogin(updatedSession);
-
-                                        return ("", _errorMessageConfig.CredentialSalah, "");
+                                        return ("", _errorMessageConfig.LDAPService, "");
                                     }
 
-                                    createPegawai = new UserVM
+                                    if (!string.IsNullOrEmpty(dataLdap?.kode_outlet) && dataLdap?.npp == nik)
                                     {
-                                        UnitId = LdapUnit.Id,
-                                        RoleId = LdapLookup.Value,
-                                        Nik = nik,
-                                        Nama = dataLdap.nama.ToUpper(),
-                                        Email = dataLdap.email.ToUpper(),
-                                        IsActive = true,
-                                        Created_By = "1",
-                                        StatusRole = 1,
-                                        Ldaplogin = true
-                                    };
+                                        LdapUnit = await _unitRepository.GetByKodeOutlet(dataLdap?.kode_outlet);
 
-                                    if (dataLdap.AccountStatus.ToUpper() == "DISABLED" || dataLdap.IbsRole.ToUpper().Contains("CUTI"))
+                                        if (LdapUnit == null)
+                                        {
+                                            if (checkSession != null)
+                                            {
+                                                updatedSession = new Tbl_Login_Session
+                                                {
+                                                    Id = checkSession.Id,
+                                                    npp = nik,
+                                                    IpAddress = ipAddress,
+                                                    Attempt = addedAttempt,
+                                                    LastActive = checkSession.LastActive,
+                                                    LastAttempt = DateTime.Now
+                                                };
+                                                await _authRepository.UpdateSessionLogin(updatedSession);
+                                            }
+                                             return ("", _errorMessageConfig.UnitNotRegistered, "");
+                                        }
+
+                                    }
+                                    else if (string.IsNullOrEmpty(dataLdap?.kode_outlet) && dataLdap?.npp == nik)
+                                    {
+                                        LdapUnit = null;
+                                        if (checkSession != null)
+                                        {
+                                            updatedSession = new Tbl_Login_Session
+                                            {
+                                                Id = checkSession.Id,
+                                                npp = nik,
+                                                IpAddress = ipAddress,
+                                                Attempt = addedAttempt,
+                                                LastActive = checkSession.LastActive,
+                                                LastAttempt = DateTime.Now
+                                            };
+                                            await _authRepository.UpdateSessionLogin(updatedSession);
+                                        }
+
+                                        return ("", _errorMessageConfig.LDAPUnitNull, "");
+                                        //return ("", _errorMessageConfig.CredentialSalah, "");
+                                    }
+                                    //LdapUnit = await _unitRepository.GetByKodeOutlet(dataLdap.kode_outlet);
+                                    //if (LdapUnit == null)
+                                    //{
+                                    //    updatedSession = new Tbl_Login_Session
+                                    //    {
+                                    //        Id = checkSession.Id,
+                                    //        npp = nik,
+                                    //        IpAddress = ipAddress,
+                                    //        Attempt = addedAttempt,
+                                    //        LastActive = checkSession.LastActive,
+                                    //        LastAttempt = DateTime.Now
+                                    //    };
+
+                                    //    await _authRepository.UpdateSessionLogin(updatedSession);
+
+                                    //    return ("", _errorMessageConfig.CredentialSalah, "");
+                                    //}
+
+                                    if (!string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI")) // null handling jika dari ldapnya rolenya  null
+                                    {
+                                        LdapLookup = await _lookupRepository.GetByType(dataLdap.IbsRole.ToUpper());
+
+                                        if (LdapLookup == null) {
+                                            if (checkSession != null)
+                                            {
+                                                updatedSession = new Tbl_Login_Session
+                                                {
+                                                    Id = checkSession.Id,
+                                                    npp = nik,
+                                                    IpAddress = ipAddress,
+                                                    Attempt = addedAttempt,
+                                                    LastActive = checkSession.LastActive,
+                                                    LastAttempt = DateTime.Now
+                                                };
+                                                await _authRepository.UpdateSessionLogin(updatedSession);
+                                            }
+                                            return ("", _errorMessageConfig.RoleNotRegistered, "");
+                                        }
+                                    }
+                                    else if (string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik &&!(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
+                                    {
+                                        LdapLookup = null;
+                                        if (checkSession != null)
+                                        {
+                                            updatedSession = new Tbl_Login_Session
+                                            {
+                                                Id = checkSession.Id,
+                                                npp = nik,
+                                                IpAddress = ipAddress,
+                                                Attempt = addedAttempt,
+                                                LastActive = checkSession.LastActive,
+                                                LastAttempt = DateTime.Now
+                                            };
+                                            await _authRepository.UpdateSessionLogin(updatedSession);
+                                        }
+                                        return ("", _errorMessageConfig.LDAPRoleNull, "");
+                                        //return ("", _errorMessageConfig.CredentialSalah, ""); Error Handling Mapping
+                                    }
+                                    //LdapLookup = await _lookupRepository.GetByType(dataLdap.IbsRole.ToUpper());
+                                    //if (LdapLookup == null)
+                                    //{
+                                    //    updatedSession = new Tbl_Login_Session
+                                    //    {
+                                    //        Id = checkSession.Id,
+                                    //        npp = nik,
+                                    //        IpAddress = ipAddress,
+                                    //        Attempt = addedAttempt,
+                                    //        LastActive = checkSession.LastActive,
+                                    //        LastAttempt = DateTime.Now
+                                    //    };
+
+                                    //    await _authRepository.UpdateSessionLogin(updatedSession);
+
+                                    //    return ("", _errorMessageConfig.CredentialSalah, "");
+                                    //}
+                                    if (LdapUnit != null || LdapLookup != null || dataLdap?.nama != null ||dataLdap.email != null)
+                                    {
+                                        createPegawai = new UserVM
+                                        {
+                                            UnitId = LdapUnit.Id,
+                                            RoleId = LdapLookup.Value,
+                                            Nik = nik,
+                                            Nama = dataLdap.nama.ToUpper(),
+                                            Email = dataLdap.email.ToUpper(),
+                                            IsActive = true,
+                                            Created_By = "1",
+                                            StatusRole = 1,
+                                            Ldaplogin = true
+                                        };
+                                    }
+                                    if ((dataLdap?.AccountStatus ?? "").ToUpper() == "DISABLED" || (dataLdap?.IbsRole ?? "").ToUpper().Contains("CUTI") || (dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
                                     {
                                         createPegawai.IsActive = false;
                                     }
@@ -614,37 +770,42 @@ namespace Ekr.Auth
                                     }
                                     #endregion
 
-                                    if (dataLdap.AccountStatus.ToUpper() == "DISABLED")
+                                    if ((dataLdap?.AccountStatus ?? "").ToUpper() == "DISABLED")
                                     {
-                                        updatedSession = new Tbl_Login_Session
+                                        if (checkSession != null)
                                         {
-                                            Id = checkSession.Id,
-                                            npp = nik,
-                                            IpAddress = ipAddress,
-                                            Attempt = addedAttempt,
-                                            LastActive = checkSession.LastActive,
-                                            LastAttempt = DateTime.Now
-                                        };
-
-                                        await _authRepository.UpdateSessionLogin(updatedSession);
-
-                                        return ("", _errorMessageConfig.CredentialSalah, "");
+                                            updatedSession = new Tbl_Login_Session
+                                            {
+                                                Id = checkSession.Id,
+                                                npp = nik,
+                                                IpAddress = ipAddress,
+                                                Attempt = addedAttempt,
+                                                LastActive = checkSession.LastActive,
+                                                LastAttempt = DateTime.Now
+                                            };
+                                            await _authRepository.UpdateSessionLogin(updatedSession);
+                                        }
+                                        return ("", _errorMessageConfig.AccountNotActive, "");
+                                        //return ("", _errorMessageConfig.CredentialSalah, ""); Error Handling Mapping
                                     }
-                                    if (dataLdap.IbsRole.ToUpper().Contains("CUTI"))
+                                    if ((dataLdap?.IbsRole ?? "").ToUpper().Contains("CUTI") || (dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
                                     {
-                                        updatedSession = new Tbl_Login_Session
+                                        if (checkSession != null)
                                         {
-                                            Id = checkSession.Id,
-                                            npp = nik,
-                                            IpAddress = ipAddress,
-                                            Attempt = addedAttempt,
-                                            LastActive = checkSession.LastActive,
-                                            LastAttempt = DateTime.Now
-                                        };
+                                            updatedSession = new Tbl_Login_Session
+                                            {
+                                                Id = checkSession.Id,
+                                                npp = nik,
+                                                IpAddress = ipAddress,
+                                                Attempt = addedAttempt,
+                                                LastActive = checkSession.LastActive,
+                                                LastAttempt = DateTime.Now
+                                            };
+                                            await _authRepository.UpdateSessionLogin(updatedSession);
+                                        }
 
-                                        await _authRepository.UpdateSessionLogin(updatedSession);
-
-                                        return ("", _errorMessageConfig.CredentialSalah, "");
+                                        return ("", _errorMessageConfig.AccountCuti, "");
+                                        //return ("", _errorMessageConfig.CredentialSalah, ""); Error Handling Mapping
                                     }
                                 }
                                 #endregion
@@ -693,19 +854,21 @@ namespace Ekr.Auth
                                     }
                                 }
 
-                                if (match == 0) 
+                                if (match == 0)
                                 {
-                                    updatedSession = new Tbl_Login_Session
+                                    if (checkSession != null)
                                     {
-                                        Id = checkSession.Id,
-                                        npp = nik,
-                                        IpAddress = ipAddress,
-                                        Attempt = addedAttempt,
-                                        LastActive = checkSession.LastActive,
-                                        LastAttempt = DateTime.Now
-                                    };
-
-                                    await _authRepository.UpdateSessionLogin(updatedSession);
+                                        updatedSession = new Tbl_Login_Session
+                                        {
+                                            Id = checkSession.Id,
+                                            npp = nik,
+                                            IpAddress = ipAddress,
+                                            Attempt = addedAttempt,
+                                            LastActive = checkSession.LastActive,
+                                            LastAttempt = DateTime.Now
+                                        };
+                                        await _authRepository.UpdateSessionLogin(updatedSession);
+                                    }
                                     return ("", _errorMessageConfig.MatchingError, ""); 
                                 }
 
@@ -760,50 +923,55 @@ namespace Ekr.Auth
 
                         if (datas.IsActive == false)
                         {
-                            updatedSession = new Tbl_Login_Session
+                            if (checkSession != null)
                             {
-                                Id = checkSession.Id,
-                                npp = nik,
-                                IpAddress = ipAddress,
-                                Attempt = addedAttempt,
-                                LastActive = checkSession.LastActive,
-                                LastAttempt = DateTime.Now
-                            };
-
-                            await _authRepository.UpdateSessionLogin(updatedSession);
+                                updatedSession = new Tbl_Login_Session
+                                {
+                                    Id = checkSession.Id,
+                                    npp = nik,
+                                    IpAddress = ipAddress,
+                                    Attempt = addedAttempt,
+                                    LastActive = checkSession.LastActive,
+                                    LastAttempt = DateTime.Now
+                                };
+                                await _authRepository.UpdateSessionLogin(updatedSession);
+                            }
                             return ("", _errorMessageConfig.CredentialSalah, "");
                         }
 
-                        if (datas.Role_Id == null) 
+                        if (datas.Role_Id == null && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
                         {
-                            updatedSession = new Tbl_Login_Session
+                            if (checkSession != null)
                             {
-                                Id = checkSession.Id,
-                                npp = nik,
-                                IpAddress = ipAddress,
-                                Attempt = addedAttempt,
-                                LastActive = checkSession.LastActive,
-                                LastAttempt = DateTime.Now
-                            };
-
-                            await _authRepository.UpdateSessionLogin(updatedSession);
-                            return ("", _errorMessageConfig.CredentialSalah, "");
+                                updatedSession = new Tbl_Login_Session
+                                {
+                                    Id = checkSession.Id,
+                                    npp = nik,
+                                    IpAddress = ipAddress,
+                                    Attempt = addedAttempt,
+                                    LastActive = checkSession.LastActive,
+                                    LastAttempt = DateTime.Now
+                                };
+                                await _authRepository.UpdateSessionLogin(updatedSession);
+                            }
+                            return ("", _errorMessageConfig.RoleNotRegistered, "");
                         };
 
                         if (!LoginAllowed) 
                         {
-                            updatedSession = new Tbl_Login_Session
+                            if (checkSession != null)
                             {
-                                Id = checkSession.Id,
-                                npp = nik,
-                                IpAddress = ipAddress,
-                                Attempt = addedAttempt,
-                                LastActive = checkSession.LastActive,
-                                LastAttempt = DateTime.Now
-                            };
-
-                            await _authRepository.UpdateSessionLogin(updatedSession);
-
+                                updatedSession = new Tbl_Login_Session
+                                {
+                                    Id = checkSession.Id,
+                                    npp = nik,
+                                    IpAddress = ipAddress,
+                                    Attempt = addedAttempt,
+                                    LastActive = checkSession.LastActive,
+                                    LastAttempt = DateTime.Now
+                                };
+                                await _authRepository.UpdateSessionLogin(updatedSession);
+                            }
                             return ("", _errorMessageConfig.CredentialSalah, ""); 
                         };
 
@@ -858,6 +1026,43 @@ namespace Ekr.Auth
 
                         if (!_tokenRepository.AddToken(rToken))
                         {
+                            if (checkSession != null)
+                            {
+                                updatedSession = new Tbl_Login_Session
+                                {
+                                    Id = checkSession.Id,
+                                    npp = nik,
+                                    IpAddress = ipAddress,
+                                    Attempt = addedAttempt,
+                                    LastActive = checkSession.LastActive,
+                                    LastAttempt = DateTime.Now
+                                };
+                                await _authRepository.UpdateSessionLogin(updatedSession);
+                            }
+
+                            errormsg = _errorMessageConfig.CredentialSalah;
+                        }
+                        if (checkSession != null)
+                        {
+                            updatedSession = new Tbl_Login_Session
+                            {
+                                Id = checkSession.Id,
+                                npp = nik,
+                                IpAddress = ipAddress,
+                                Attempt = 0,
+                                LastActive = checkSession.LastActive,
+                                LastAttempt = DateTime.Now
+                            };
+                            await _authRepository.UpdateSessionLogin(updatedSession);
+                        }
+
+                        return (jwt, errormsg, refresh_token);
+                        #endregion
+                    }
+                    else
+                    {
+                        if (checkSession != null)
+                        {
                             updatedSession = new Tbl_Login_Session
                             {
                                 Id = checkSession.Id,
@@ -867,40 +1072,8 @@ namespace Ekr.Auth
                                 LastActive = checkSession.LastActive,
                                 LastAttempt = DateTime.Now
                             };
-
                             await _authRepository.UpdateSessionLogin(updatedSession);
-
-                            errormsg = _errorMessageConfig.CredentialSalah;
                         }
-
-                        updatedSession = new Tbl_Login_Session
-                        {
-                            Id = checkSession.Id,
-                            npp = nik,
-                            IpAddress = ipAddress,
-                            Attempt = 0,
-                            LastActive = checkSession.LastActive,
-                            LastAttempt = DateTime.Now
-                        };
-
-                        await _authRepository.UpdateSessionLogin(updatedSession);
-
-                        return (jwt, errormsg, refresh_token);
-                        #endregion
-                    }
-                    else
-                    {
-                        updatedSession = new Tbl_Login_Session
-                        {
-                            Id = checkSession.Id,
-                            npp = nik,
-                            IpAddress = ipAddress,
-                            Attempt = addedAttempt,
-                            LastActive = checkSession.LastActive,
-                            LastAttempt = DateTime.Now
-                        };
-
-                        await _authRepository.UpdateSessionLogin(updatedSession);
 
                         return ("", _errorMessageConfig.LoginMaxLimitReached, "");
                     }
@@ -938,89 +1111,162 @@ namespace Ekr.Auth
                             #region SSO Login with LDAP ISU -- dikomen dulu ampe ISU nya clear
                             if (datas == null || datas.LDAPLogin == true)
                             {
-                                if (string.IsNullOrEmpty(dataLdap.npp) || ((dataLdap.npp ?? "NULL").Contains("credential") && (dataLdap.npp ?? "NULL") != "Service LDAP Sedang Sibuk. "))
-                                {
-                                    updatedSession = new Tbl_Login_Session
+                               if (string.IsNullOrEmpty(dataLdap?.npp) || ((dataLdap?.npp ?? "NULL").Contains("credential") &&  !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
+                               {
+                                    if (checkSession != null)
                                     {
-                                        Id = checkSession.Id,
-                                        npp = nik,
-                                        IpAddress = ipAddress,
-                                        Attempt = addedAttempt,
-                                        LastActive = checkSession.LastActive,
-                                        LastAttempt = DateTime.Now
-                                    };
-
-                                    await _authRepository.UpdateSessionLogin(updatedSession);
+                                        updatedSession = new Tbl_Login_Session
+                                        {
+                                            Id = checkSession.Id,
+                                            npp = nik,
+                                            IpAddress = ipAddress,
+                                            Attempt = addedAttempt,
+                                            LastActive = checkSession.LastActive,
+                                            LastAttempt = DateTime.Now
+                                        };
+                                        await _authRepository.UpdateSessionLogin(updatedSession);
+                                    }
 
                                     return ("", _errorMessageConfig.CredentialSalah, "");
                                 }
 
-                                if (dataLdap.npp == "Service LDAP Sedang Sibuk. ")
+                                if ((dataLdap?.npp ?? "NULL").Contains("LDAP"))
                                 {
-                                    updatedSession = new Tbl_Login_Session
+                                    if (checkSession != null)
                                     {
-                                        Id = checkSession.Id,
-                                        npp = nik,
-                                        IpAddress = ipAddress,
-                                        Attempt = addedAttempt,
-                                        LastActive = checkSession.LastActive,
-                                        LastAttempt = DateTime.Now
-                                    };
-
-                                    await _authRepository.UpdateSessionLogin(updatedSession);
+                                        updatedSession = new Tbl_Login_Session
+                                        {
+                                            Id = checkSession.Id,
+                                            npp = nik,
+                                            IpAddress = ipAddress,
+                                            Attempt = addedAttempt,
+                                            LastActive = checkSession.LastActive,
+                                            LastAttempt = DateTime.Now
+                                        };
+                                        await _authRepository.UpdateSessionLogin(updatedSession);
+                                    }
 
                                     return ("", _errorMessageConfig.LDAPService, "");
                                 }
 
-                                LdapUnit = await _unitRepository.GetByKodeOutlet(dataLdap.kode_outlet);
-                                if (LdapUnit == null)
+                                if (!string.IsNullOrEmpty(dataLdap?.kode_outlet) && dataLdap?.npp == nik)
                                 {
-                                    updatedSession = new Tbl_Login_Session
+                                    LdapUnit = await _unitRepository.GetByKodeOutlet(dataLdap?.kode_outlet);
+                                    if (LdapUnit == null)
                                     {
-                                        Id = checkSession.Id,
-                                        npp = nik,
-                                        IpAddress = ipAddress,
-                                        Attempt = addedAttempt,
-                                        LastActive = checkSession.LastActive,
-                                        LastAttempt = DateTime.Now
-                                    };
+                                        if (checkSession != null)
+                                        {
+                                            updatedSession = new Tbl_Login_Session
+                                            {
+                                                Id = checkSession.Id,
+                                                npp = nik,
+                                                IpAddress = ipAddress,
+                                                Attempt = addedAttempt,
+                                                LastActive = checkSession.LastActive,
+                                                LastAttempt = DateTime.Now
+                                            };
+                                            await _authRepository.UpdateSessionLogin(updatedSession);
+                                        }
 
-                                    await _authRepository.UpdateSessionLogin(updatedSession);
 
-                                    return ("", _errorMessageConfig.CredentialSalah, "");
+                                        return ("", _errorMessageConfig.UnitNotRegistered, "");
+                                    }
+
                                 }
-                                LdapLookup = await _lookupRepository.GetByType(dataLdap.IbsRole.ToUpper());
-                                if (LdapLookup == null)
+                                else if (string.IsNullOrEmpty(dataLdap?.kode_outlet) && dataLdap?.npp == nik)
                                 {
-                                    updatedSession = new Tbl_Login_Session
+                                    LdapUnit = null;
+                                    if (checkSession != null)
                                     {
-                                        Id = checkSession.Id,
-                                        npp = nik,
-                                        IpAddress = ipAddress,
-                                        Attempt = addedAttempt,
-                                        LastActive = checkSession.LastActive,
-                                        LastAttempt = DateTime.Now
-                                    };
+                                        updatedSession = new Tbl_Login_Session
+                                        {
+                                            Id = checkSession.Id,
+                                            npp = nik,
+                                            IpAddress = ipAddress,
+                                            Attempt = addedAttempt,
+                                            LastActive = checkSession.LastActive,
+                                            LastAttempt = DateTime.Now
+                                        };
+                                        await _authRepository.UpdateSessionLogin(updatedSession);
+                                    }
 
-                                    await _authRepository.UpdateSessionLogin(updatedSession);
-
-                                    return ("", _errorMessageConfig.CredentialSalah, "");
+                                    return ("", _errorMessageConfig.LDAPUnitNull, "");
+                                    //return ("", _errorMessageConfig.CredentialSalah, "");
                                 }
+                                //LdapUnit = await _unitRepository.GetByKodeOutlet(dataLdap.kode_outlet);
+                                //if (LdapUnit == null)
+                                //{
+                                //    updatedSession = new Tbl_Login_Session
+                                //    {
+                                //        Id = checkSession.Id,
+                                //        npp = nik,
+                                //        IpAddress = ipAddress,
+                                //        Attempt = addedAttempt,
+                                //        LastActive = checkSession.LastActive,
+                                //        LastAttempt = DateTime.Now
+                                //    };
 
-                                createPegawai = new UserVM
+                                //    await _authRepository.UpdateSessionLogin(updatedSession);
+
+                                //    return ("", _errorMessageConfig.CredentialSalah, "");
+                                //} 
+
+                                if (!string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI")) // null handling jika dari ldapnya rolenya  null
                                 {
-                                    UnitId = LdapUnit.Id,
-                                    RoleId = LdapLookup.Value,
-                                    Nik = nik,
-                                    Nama = dataLdap.nama.ToUpper(),
-                                    Email = dataLdap.email.ToUpper(),
-                                    IsActive = true,
-                                    Created_By = "1",
-                                    StatusRole = 1,
-                                    Ldaplogin = true
-                                };
+                                    LdapLookup = await _lookupRepository.GetByType(dataLdap.IbsRole?.ToUpper());
 
-                                if (dataLdap.AccountStatus.ToUpper() == "DISABLED" || dataLdap.IbsRole.ToUpper().Contains("CUTI"))
+                                    if (LdapLookup == null)
+                                    {
+                                        if (checkSession != null)
+                                        {
+                                            updatedSession = new Tbl_Login_Session
+                                            {
+                                                Id = checkSession.Id,
+                                                npp = nik,
+                                                IpAddress = ipAddress,
+                                                Attempt = addedAttempt,
+                                                LastActive = checkSession.LastActive,
+                                                LastAttempt = DateTime.Now
+                                            };
+                                            await _authRepository.UpdateSessionLogin(updatedSession);
+                                        }
+                                        return ("", _errorMessageConfig.RoleNotRegistered, "");
+                                    }
+                                }
+                                else if (string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
+                                {
+                                    LdapLookup = null; if (checkSession != null)
+                                    {
+                                        updatedSession = new Tbl_Login_Session
+                                        {
+                                            Id = checkSession.Id,
+                                            npp = nik,
+                                            IpAddress = ipAddress,
+                                            Attempt = addedAttempt,
+                                            LastActive = checkSession.LastActive,
+                                            LastAttempt = DateTime.Now
+                                        };
+                                        await _authRepository.UpdateSessionLogin(updatedSession);
+                                    }
+                                    return ("", _errorMessageConfig.LDAPRoleNull, "");
+                                    //return ("", _errorMessageConfig.CredentialSalah, ""); Error Handling Mapping
+                                }
+                                if (LdapUnit != null || LdapLookup != null || dataLdap?.email != null || dataLdap?.nama != null)
+                                {
+                                    createPegawai = new UserVM
+                                    {
+                                        UnitId = LdapUnit.Id,
+                                        RoleId = LdapLookup.Value,
+                                        Nik = nik,
+                                        Nama = dataLdap.nama.ToUpper(),
+                                        Email = dataLdap.email.ToUpper(),
+                                        IsActive = true,
+                                        Created_By = "1",
+                                        StatusRole = 1,
+                                        Ldaplogin = true
+                                    };
+                                }
+                                if ((dataLdap?.AccountStatus ?? "").ToUpper() == "DISABLED" || (dataLdap?.IbsRole ?? "").ToUpper().Contains("CUTI") || (dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
                                 {
                                     createPegawai.IsActive = false;
                                 }
@@ -1061,39 +1307,78 @@ namespace Ekr.Auth
                                 }
                                 #endregion
 
-                                if (dataLdap.AccountStatus.ToUpper() == "DISABLED")
+
+                                if ((dataLdap?.AccountStatus ?? "").ToUpper() == "DISABLED")
                                 {
-                                    updatedSession = new Tbl_Login_Session
+                                    if (checkSession != null)
                                     {
-                                        Id = checkSession.Id,
-                                        npp = nik,
-                                        IpAddress = ipAddress,
-                                        Attempt = addedAttempt,
-                                        LastActive = checkSession.LastActive,
-                                        LastAttempt = DateTime.Now
-                                    };
-
-                                    await _authRepository.UpdateSessionLogin(updatedSession);
-
-                                    return ("", _errorMessageConfig.CredentialSalah, "");
+                                        updatedSession = new Tbl_Login_Session
+                                        {
+                                            Id = checkSession.Id,
+                                            npp = nik,
+                                            IpAddress = ipAddress,
+                                            Attempt = addedAttempt,
+                                            LastActive = checkSession.LastActive,
+                                            LastAttempt = DateTime.Now
+                                        };
+                                        await _authRepository.UpdateSessionLogin(updatedSession);
+                                    }
+                                    return ("", _errorMessageConfig.AccountNotActive, "");
+                                    //return ("", _errorMessageConfig.CredentialSalah, ""); Error Handling Mapping
                                 }
-                                if (dataLdap.IbsRole.ToUpper().Contains("CUTI"))
+                                if ((dataLdap?.IbsRole ?? "").ToUpper().Contains("CUTI") || (dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
                                 {
-                                    updatedSession = new Tbl_Login_Session
+                                    if (checkSession != null)
                                     {
-                                        Id = checkSession.Id,
-                                        npp = nik,
-                                        IpAddress = ipAddress,
-                                        Attempt = addedAttempt,
-                                        LastActive = checkSession.LastActive,
-                                        LastAttempt = DateTime.Now
-                                    };
+                                        updatedSession = new Tbl_Login_Session
+                                        {
+                                            Id = checkSession.Id,
+                                            npp = nik,
+                                            IpAddress = ipAddress,
+                                            Attempt = addedAttempt,
+                                            LastActive = checkSession.LastActive,
+                                            LastAttempt = DateTime.Now
+                                        };
+                                        await _authRepository.UpdateSessionLogin(updatedSession);
+                                    }
 
-                                    await _authRepository.UpdateSessionLogin(updatedSession);
-
-                                    return ("", _errorMessageConfig.CredentialSalah, "");
+                                    return ("", _errorMessageConfig.AccountCuti, "");
+                                    //return ("", _errorMessageConfig.CredentialSalah, ""); Error Handling Mapping
                                 }
                             }
+                            //    if ((dataLdap?.AccountStatus ?? "").ToUpper() == "DISABLED") 
+                            //    {
+                            //        updatedSession = new Tbl_Login_Session
+                            //        {
+                            //            Id = checkSession.Id,
+                            //            npp = nik,
+                            //            IpAddress = ipAddress,
+                            //            Attempt = addedAttempt,
+                            //            LastActive = checkSession.LastActive,
+                            //            LastAttempt = DateTime.Now
+                            //        };
+
+                            //        await _authRepository.UpdateSessionLogin(updatedSession);
+
+                            //        return ("", _errorMessageConfig.CredentialSalah, "");
+                            //    }
+                            //    if ((dataLdap?.IbsRole ?? "").ToUpper().Contains("CUTI") || (dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
+                            //    {
+                            //        updatedSession = new Tbl_Login_Session
+                            //        {
+                            //            Id = checkSession.Id,
+                            //            npp = nik,
+                            //            IpAddress = ipAddress,
+                            //            Attempt = addedAttempt,
+                            //            LastActive = checkSession.LastActive,
+                            //            LastAttempt = DateTime.Now
+                            //        };
+
+                            //        await _authRepository.UpdateSessionLogin(updatedSession);
+
+                            //        return ("", _errorMessageConfig.CredentialSalah, "");
+                            //    }
+                            //}
                             #endregion
                         }
                         datas = await _authRepository.LoginUser(nik)
@@ -1199,7 +1484,7 @@ namespace Ekr.Auth
                         //        return ("", _errorMessageConfig.CredentialSalah, "");
                         //    }
                         //}
-                        if (LdapConf && (dataLdap.npp != null && dataLdap.npp != ""))
+                        if (LdapConf && (dataLdap?.npp != null && dataLdap?.npp != ""))
                         {
                             LoginAllowed = true;
                         }
@@ -1207,49 +1492,55 @@ namespace Ekr.Auth
 
                     if (datas.IsActive == false)
                     {
-                        updatedSession = new Tbl_Login_Session
+                        if (checkSession != null)
                         {
-                            Id = checkSession.Id,
-                            npp = nik,
-                            IpAddress = ipAddress,
-                            Attempt = addedAttempt,
-                            LastActive = checkSession.LastActive,
-                            LastAttempt = DateTime.Now
-                        };
-
-                        await _authRepository.UpdateSessionLogin(updatedSession);
+                            updatedSession = new Tbl_Login_Session
+                            {
+                                Id = checkSession.Id,
+                                npp = nik,
+                                IpAddress = ipAddress,
+                                Attempt = addedAttempt,
+                                LastActive = checkSession.LastActive,
+                                LastAttempt = DateTime.Now
+                            };
+                            await _authRepository.UpdateSessionLogin(updatedSession);
+                        }
                         return ("", _errorMessageConfig.CredentialSalah, "");
                     }
 
                     if (datas.Role_Id == null)
                     {
-                        updatedSession = new Tbl_Login_Session
+                        if (checkSession != null)
                         {
-                            Id = checkSession.Id,
-                            npp = nik,
-                            IpAddress = ipAddress,
-                            Attempt = addedAttempt,
-                            LastActive = checkSession.LastActive,
-                            LastAttempt = DateTime.Now
-                        };
-
-                        await _authRepository.UpdateSessionLogin(updatedSession);
+                            updatedSession = new Tbl_Login_Session
+                            {
+                                Id = checkSession.Id,
+                                npp = nik,
+                                IpAddress = ipAddress,
+                                Attempt = addedAttempt,
+                                LastActive = checkSession.LastActive,
+                                LastAttempt = DateTime.Now
+                            };
+                            await _authRepository.UpdateSessionLogin(updatedSession);
+                        }
                         return ("", _errorMessageConfig.CredentialSalah, "");
                     };
 
                     if (!LoginAllowed)
                     {
-                        updatedSession = new Tbl_Login_Session
+                        if (checkSession != null)
                         {
-                            Id = checkSession.Id,
-                            npp = nik,
-                            IpAddress = ipAddress,
-                            Attempt = addedAttempt,
-                            LastActive = checkSession.LastActive,
-                            LastAttempt = DateTime.Now
-                        };
-
-                        await _authRepository.UpdateSessionLogin(updatedSession);
+                            updatedSession = new Tbl_Login_Session
+                            {
+                                Id = checkSession.Id,
+                                npp = nik,
+                                IpAddress = ipAddress,
+                                Attempt = addedAttempt,
+                                LastActive = checkSession.LastActive,
+                                LastAttempt = DateTime.Now
+                            };
+                            await _authRepository.UpdateSessionLogin(updatedSession);
+                        }
 
                         return ("", _errorMessageConfig.CredentialSalah, "");
                     };
@@ -1369,66 +1660,153 @@ namespace Ekr.Auth
                         #region SSO Login with LDAP ISU -- dikomen dulu ampe ISU nya clear
                         if (datas == null || datas.LDAPLogin == true)
                         {
-                            if (dataLdap.npp == null || dataLdap.npp.Contains("INCORRECT") || dataLdap.npp.Contains("UNWILLING") || dataLdap.IbsRole == null || dataLdap.IbsRole.ToUpper() == "NULL")
+                            if (string.IsNullOrEmpty(dataLdap?.npp) || ((dataLdap?.npp ?? "NULL").Contains("credential") && !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
                             {
-                                newSession = new Tbl_Login_Session
-                                {
-                                    npp = nik,
-                                    IpAddress = ipAddress,
-                                    Attempt = 1,
-                                    LastActive = null,
-                                    LastAttempt = DateTime.Now
-                                };
 
-                                await _authRepository.InsertSessionLogin(newSession);
+                                if (checkSession != null)
+                                {
+                                    updatedSession = new Tbl_Login_Session
+                                    {
+                                        Id = checkSession.Id,
+                                        npp = nik,
+                                        IpAddress = ipAddress,
+                                        Attempt = addedAttempt,
+                                        LastActive = checkSession.LastActive,
+                                        LastAttempt = DateTime.Now
+                                    };
+                                    await _authRepository.UpdateSessionLogin(updatedSession);
+                                }
+
                                 return ("", _errorMessageConfig.CredentialSalah, "");
                             }
 
-                            LdapUnit = await _unitRepository.GetByKodeOutlet(dataLdap.kode_outlet);
-                            if (LdapUnit == null)
+                            if ((dataLdap?.npp ?? "NULL").Contains("LDAP"))
                             {
-                                newSession = new Tbl_Login_Session
+                                if (checkSession != null)
                                 {
-                                    npp = nik,
-                                    IpAddress = ipAddress,
-                                    Attempt = 1,
-                                    LastActive = null,
-                                    LastAttempt = DateTime.Now
-                                };
+                                    updatedSession = new Tbl_Login_Session
+                                    {
+                                        Id = checkSession.Id,
+                                        npp = nik,
+                                        IpAddress = ipAddress,
+                                        Attempt = addedAttempt,
+                                        LastActive = checkSession.LastActive,
+                                        LastAttempt = DateTime.Now
+                                    };
+                                    await _authRepository.UpdateSessionLogin(updatedSession);
+                                }
 
-                                await _authRepository.InsertSessionLogin(newSession);
-                                return ("", _errorMessageConfig.CredentialSalah, "");
-                            }
-                            LdapLookup = await _lookupRepository.GetByType(dataLdap.IbsRole.ToUpper());
-                            if (LdapLookup == null)
-                            {
-                                newSession = new Tbl_Login_Session
-                                {
-                                    npp = nik,
-                                    IpAddress = ipAddress,
-                                    Attempt = 1,
-                                    LastActive = null,
-                                    LastAttempt = DateTime.Now
-                                };
-
-                                await _authRepository.InsertSessionLogin(newSession);
-                                return ("", _errorMessageConfig.CredentialSalah, "");
+                                return ("", _errorMessageConfig.LDAPService, "");
                             }
 
-                            createPegawai = new UserVM
+                            if (!string.IsNullOrEmpty(dataLdap?.kode_outlet) && dataLdap?.npp == nik)
                             {
-                                UnitId = LdapUnit.Id,
-                                RoleId = LdapLookup.Value,
-                                Nik = nik,
-                                Nama = dataLdap.nama.ToUpper(),
-                                Email = dataLdap.email.ToUpper(),
-                                IsActive = true,
-                                Created_By = "1",
-                                StatusRole = 1,
-                                Ldaplogin = true
-                            };
+                                LdapUnit = await _unitRepository.GetByKodeOutlet(dataLdap?.kode_outlet);
+                                if (LdapUnit == null)
+                                {
 
-                            if (dataLdap.AccountStatus.ToUpper() == "DISABLED" || dataLdap.IbsRole.ToUpper().Contains("CUTI"))
+                                     return ("", _errorMessageConfig.UnitNotRegistered, "");
+                                }
+
+                            }
+                            else if (string.IsNullOrEmpty(dataLdap?.kode_outlet) && dataLdap?.npp == nik)
+                            {
+                                LdapUnit = null;
+                                if (checkSession != null)
+                                {
+                                    updatedSession = new Tbl_Login_Session
+                                    {
+                                        Id = checkSession.Id,
+                                        npp = nik,
+                                        IpAddress = ipAddress,
+                                        Attempt = addedAttempt,
+                                        LastActive = checkSession.LastActive,
+                                        LastAttempt = DateTime.Now
+                                    };
+                                    await _authRepository.UpdateSessionLogin(updatedSession);
+                                }
+
+                                return ("", _errorMessageConfig.LDAPUnitNull, "");
+                                //return ("", _errorMessageConfig.CredentialSalah, "");
+                            }
+                            //LdapUnit = await _unitRepository.GetByKodeOutlet(dataLdap.kode_outlet);
+                            //if (LdapUnit == null)
+                            //{
+                            //    updatedSession = new Tbl_Login_Session
+                            //    {
+                            //        Id = checkSession.Id,
+                            //        npp = nik,
+                            //        IpAddress = ipAddress,
+                            //        Attempt = addedAttempt,
+                            //        LastActive = checkSession.LastActive,
+                            //        LastAttempt = DateTime.Now
+                            //    };
+
+                            //    await _authRepository.UpdateSessionLogin(updatedSession);
+
+                            //    return ("", _errorMessageConfig.CredentialSalah, "");
+                            //}
+
+                            if (!string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI")) // null handling jika dari ldapnya rolenya  null
+                            {
+                                LdapLookup = await _lookupRepository.GetByType(dataLdap.IbsRole?.ToUpper());
+
+                                if (LdapLookup == null)
+                                {
+                                    if (checkSession != null)
+                                    {
+                                        updatedSession = new Tbl_Login_Session
+                                        {
+                                            Id = checkSession.Id,
+                                            npp = nik,
+                                            IpAddress = ipAddress,
+                                            Attempt = addedAttempt,
+                                            LastActive = checkSession.LastActive,
+                                            LastAttempt = DateTime.Now
+                                        };
+                                        await _authRepository.UpdateSessionLogin(updatedSession);
+                                    }
+                                    return ("", _errorMessageConfig.RoleNotRegistered, "");
+                                }
+                            }
+                            else if (string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
+                            {
+                                LdapLookup = null;
+                                if (checkSession != null)
+                                {
+                                    updatedSession = new Tbl_Login_Session
+                                    {
+                                        Id = checkSession.Id,
+                                        npp = nik,
+                                        IpAddress = ipAddress,
+                                        Attempt = addedAttempt,
+                                        LastActive = checkSession.LastActive,
+                                        LastAttempt = DateTime.Now
+                                    };
+                                    await _authRepository.UpdateSessionLogin(updatedSession);
+                                }
+
+                                return ("", _errorMessageConfig.LDAPRoleNull, "");
+                                //return ("", _errorMessageConfig.CredentialSalah, ""); Error Handling Mapping
+                            }
+
+                            if (LdapUnit != null || LdapLookup != null)
+                            {
+                                createPegawai = new UserVM
+                                {
+                                    UnitId = LdapUnit.Id,
+                                    RoleId = LdapLookup.Value,
+                                    Nik = nik,
+                                    Nama = dataLdap.nama.ToUpper(),
+                                    Email = dataLdap.email.ToUpper(),
+                                    IsActive = true,
+                                    Created_By = "1",
+                                    StatusRole = 1,
+                                    Ldaplogin = true
+                                };
+                            }
+
+                            if ((dataLdap?.AccountStatus ?? "").ToUpper() == "DISABLED" || (dataLdap?.IbsRole ?? "").ToUpper().Contains("CUTI") || (dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
                             {
                                 createPegawai.IsActive = false;
                             }
@@ -1469,33 +1847,42 @@ namespace Ekr.Auth
                             }
                             #endregion
 
-                            if (dataLdap.AccountStatus.ToUpper() == "DISABLED")
+                            if ((dataLdap?.AccountStatus ?? "").ToUpper() == "DISABLED")
                             {
-                                newSession = new Tbl_Login_Session
+                                if (checkSession != null)
                                 {
-                                    npp = nik,
-                                    IpAddress = ipAddress,
-                                    Attempt = 1,
-                                    LastActive = null,
-                                    LastAttempt = DateTime.Now
-                                };
-
-                                await _authRepository.InsertSessionLogin(newSession);
-                                return ("", _errorMessageConfig.CredentialSalah, "");
+                                    updatedSession = new Tbl_Login_Session
+                                    {
+                                        Id = checkSession.Id,
+                                        npp = nik,
+                                        IpAddress = ipAddress,
+                                        Attempt = addedAttempt,
+                                        LastActive = checkSession.LastActive,
+                                        LastAttempt = DateTime.Now
+                                    };
+                                    await _authRepository.UpdateSessionLogin(updatedSession);
+                                }
+                                return ("", _errorMessageConfig.AccountNotActive, "");
+                                //return ("", _errorMessageConfig.CredentialSalah, ""); Error Handling Mapping
                             }
-                            if (dataLdap.IbsRole.ToUpper().Contains("CUTI"))
+                            if ((dataLdap?.IbsRole ?? "").ToUpper().Contains("CUTI") || (dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
                             {
-                                newSession = new Tbl_Login_Session
+                                if (checkSession != null)
                                 {
-                                    npp = nik,
-                                    IpAddress = ipAddress,
-                                    Attempt = 1,
-                                    LastActive = null,
-                                    LastAttempt = DateTime.Now
-                                };
+                                    updatedSession = new Tbl_Login_Session
+                                    {
+                                        Id = checkSession.Id,
+                                        npp = nik,
+                                        IpAddress = ipAddress,
+                                        Attempt = addedAttempt,
+                                        LastActive = checkSession.LastActive,
+                                        LastAttempt = DateTime.Now
+                                    };
+                                    await _authRepository.UpdateSessionLogin(updatedSession);
+                                }
 
-                                await _authRepository.InsertSessionLogin(newSession);
-                                return ("", _errorMessageConfig.CredentialSalah, "");
+                                return ("", _errorMessageConfig.AccountCuti, "");
+                                //return ("", _errorMessageConfig.CredentialSalah, ""); Error Handling Mapping
                             }
                         }
                         #endregion
@@ -1863,8 +2250,8 @@ namespace Ekr.Auth
                     _.data.npp = _.err;  //error ldap salah password
                 }
                 if (_.data.npp == null && (_.err ?? "NULL").Contains("The LDAP server is unavailable. ") && _.status == true )
-                {
-                    _.data.npp = "Service LDAP Sedang Sibuk. ";
+                { 
+                    _.data.npp = "The LDAP server is unavailable. ";
                 }
                 return _.data;
             }

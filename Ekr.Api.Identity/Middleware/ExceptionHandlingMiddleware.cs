@@ -46,7 +46,7 @@ namespace Ekr.Api.Identity.Middleware
 
                 var res = new ExceptionDto
                 {
-                    ExceptionMessage = "91501 || Something wrong happen, please contact our administrator!",
+                    ExceptionMessage = "91501 || Something wrong happen, please contact our administrator! ",
                     TicketNumber = numb.ToString(),
                     ExceptionTrace = e
                 };

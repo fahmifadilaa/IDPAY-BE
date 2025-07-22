@@ -24,8 +24,8 @@ public class LdapConnectionPool : IAsyncDisposable
     {
         var ldapConfig = config.Value;
 
-        _host = ldapConfig.Url.Replace("LDAP://", "").Replace("ldap://", "");
-        _port = 389; // bisa diubah kalau ada port di config
+        _host = new Uri(ldapConfig.Url).Host;
+        _port = ldapConfig.Port;
         _maxSize = ldapConfig.MaxPoolSize > 0 ? ldapConfig.MaxPoolSize : 10;
         _connectionTimeout = TimeSpan.FromSeconds(ldapConfig.ConnTimeOut);
         _PoolTimeOut = TimeSpan.FromSeconds(ldapConfig.PoolTimeOut);
@@ -127,8 +127,12 @@ public class LdapConnectionPool : IAsyncDisposable
         }
         catch (LdapException ex)
         {
+
             connection.SessionOptions.DomainName = $"LDAP Error: {ex.Message}";
             // Jangan lempar, tetap kembalikan connection
+            //Console.WriteLine($"[LDAP POOL] Failed to bind: {ex.Message}");
+            //connection.Dispose(); // ❗ Penting
+            //return null;          // ❗ Return null agar tidak masuk pool
         }
 
         return connection;

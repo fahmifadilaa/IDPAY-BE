@@ -28,7 +28,7 @@ public class LdapService : ILdapService
     public async Task<(bool status, string err, LdapInfo data)> LdapAuthAsync(LDAPConfig conf, string sNPP, string password)
     {
         var ldapInfo = new LdapInfo();
-        string host = conf.Url.Replace("LDAP://", "").Replace("ldap://", "");
+        //string host = conf.Url.Replace("LDAP://", "").Replace("ldap://", "");
         string userDn = $"uid={sNPP},{conf.LdapHierarchy}";
         //TimeSpan PoolTimeOut  = TimeSpan.FromSeconds(conf.PoolTimeOut);
 
@@ -42,7 +42,7 @@ public class LdapService : ILdapService
 
         //"BindError: The LDAP server is unavailable.
 
-        if (!string.IsNullOrEmpty(connection.SessionOptions.DomainName) &&  connection.SessionOptions.DomainName != "OK")
+        if (connection?.SessionOptions?.DomainName != null &&  connection.SessionOptions.DomainName != "OK")
         {
             return (true, $"LDAP Error: The LDAP server is unavailable. ", new LdapInfo());
 
@@ -103,10 +103,7 @@ public class LdapService : ILdapService
             //return (false, $"LDAP Error: {ex.Message}", null);
             return (true, $"LDAP Error: {ex.Message}", new LdapInfo());
         }
-        catch (Exception ex)
-        {
-            return (true, $"Error: {ex.Message}", new LdapInfo());
-        }
+        
         finally
         {
             if (!isConnectionBroken)

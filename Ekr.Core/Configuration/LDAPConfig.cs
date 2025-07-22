@@ -5,6 +5,8 @@ namespace Ekr.Core.Configuration
     public class LDAPConfig
     {
         public string Url { get; set; }
+
+        public int Port { get; set; }
         public string LdapHierarchy { get; set; }
         public string IbsRoleLdapHierarchy { get; set; }
         public bool IsActive { get; set; }

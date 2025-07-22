@@ -1,4 +1,5 @@
 ﻿using Ekr.Api.Identity.Filters;
+using Ekr.Auth;
 using Ekr.Auth.Contracts;
 using Ekr.Core.Configuration;
 using Ekr.Core.Constant;
@@ -8,6 +9,7 @@ using Ekr.Core.Entities.Enrollment;
 using Ekr.Core.Entities.Token;
 using Ekr.Core.Securities.Symmetric;
 using Ekr.Repository.Contracts.Token;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -126,51 +128,115 @@ namespace Ekr.Api.Identity.Controllers
         #endregion
 
         #region (new after 2024 pentest)
-            #region unencrypted login
+        //    #region unencrypted login Before Error Response 500
+        //[HttpPost("user")]
+        //[ProducesResponseType(typeof(ServiceResponse<AuthAgentRes>), 200)]
+        //[ProducesResponseType(500)]
+        //[LogActivity(Keterangan = "Login User")]
+        //public async Task<ServiceResponse<AuthAgentRes>> LoginUser([FromBody] AuthUserReq req)
+        //{
+        //    var isEncrypt = _config.GetValue<bool>("isEncrypt");
+        //    var isLimited = _config.GetValue<bool>("isLimited");
+        //    var BaseUrl = _config.GetValue<string>("UrlImageRecognition:BaseUrl");
+        //    var MatchImageBase64ToBase64 = _config.GetValue<string>("UrlImageRecognition:MatchImageBase64ToBase64");
+
+        //    if (isLimited)
+        //    {
+        //        var (jwt, error, refreshToken) = await _userManager.AuthenticateUserLimited(
+        //        req.Nik, req.ClientId, req.IpAddress, req.Password, req.LoginType, req.Finger, BaseUrl, MatchImageBase64ToBase64, isEncrypt);
+
+        //        if (string.IsNullOrWhiteSpace(jwt))
+        //        {
+        //            return new ServiceResponse<AuthAgentRes> { Message = error, Status = (int)ServiceResponseStatus.ERROR };
+        //        }
+
+        //        return new ServiceResponse<AuthAgentRes>
+        //        {
+        //            Status = (int)ServiceResponseStatus.SUKSES,
+        //            Message = nameof(ServiceResponseStatus.SUKSES),
+        //            Data = new AuthAgentRes
+        //            {
+        //                JwtToken = jwt,
+        //                RefreshToken = refreshToken
+        //            }
+        //        };
+
+        //    }
+        //    else
+        //    {
+        //        var (jwt, error, refreshToken) = await _userManager.AuthenticateUser(
+        //        req.Nik, req.ClientId, req.IpAddress, req.Password, req.LoginType, req.Finger, BaseUrl, MatchImageBase64ToBase64, isEncrypt);
+
+        //        if (string.IsNullOrWhiteSpace(jwt))
+        //        {
+        //            return new ServiceResponse<AuthAgentRes> { Message = error, Status = (int)ServiceResponseStatus.ERROR };
+        //        }
+
+        //        return new ServiceResponse<AuthAgentRes>
+        //        {
+        //            Status = (int)ServiceResponseStatus.SUKSES,
+        //            Message = nameof(ServiceResponseStatus.SUKSES),
+        //            Data = new AuthAgentRes
+        //            {
+        //                JwtToken = jwt,
+        //                RefreshToken = refreshToken
+        //            }
+        //        };
+        //    }
+        //}
+        //#endregion
+
+        #region unencrypted login
         [HttpPost("user")]
         [ProducesResponseType(typeof(ServiceResponse<AuthAgentRes>), 200)]
-        [ProducesResponseType(500)]
+        [ProducesResponseType(typeof(ServiceResponse<AuthAgentRes>), 500)]
         [LogActivity(Keterangan = "Login User")]
-        public async Task<ServiceResponse<AuthAgentRes>> LoginUser([FromBody] AuthUserReq req)
+        public async Task<IActionResult> LoginUser([FromBody] AuthUserReq req)
         {
             var isEncrypt = _config.GetValue<bool>("isEncrypt");
             var isLimited = _config.GetValue<bool>("isLimited");
-            var BaseUrl = _config.GetValue<string>("UrlImageRecognition:BaseUrl");
-            var MatchImageBase64ToBase64 = _config.GetValue<string>("UrlImageRecognition:MatchImageBase64ToBase64");
-            
+            var baseUrl = _config.GetValue<string>("UrlImageRecognition:BaseUrl");
+            var matchUrl = _config.GetValue<string>("UrlImageRecognition:MatchImageBase64ToBase64");
+
+            string jwt, error, refreshToken;
+
             if (isLimited)
             {
-                var (jwt, error, refreshToken) = await _userManager.AuthenticateUserLimited(
-                req.Nik, req.ClientId, req.IpAddress, req.Password, req.LoginType, req.Finger, BaseUrl, MatchImageBase64ToBase64, isEncrypt);
-
-                if (string.IsNullOrWhiteSpace(jwt))
-                {
-                    return new ServiceResponse<AuthAgentRes> { Message = error, Status = (int)ServiceResponseStatus.ERROR };
-                }
-
-                return new ServiceResponse<AuthAgentRes>
-                {
-                    Status = (int)ServiceResponseStatus.SUKSES,
-                    Message = nameof(ServiceResponseStatus.SUKSES),
-                    Data = new AuthAgentRes
-                    {
-                        JwtToken = jwt,
-                        RefreshToken = refreshToken
-                    }
-                };
-
+                (jwt, error, refreshToken) = await _userManager.AuthenticateUserLimited(
+                    req.Nik, req.ClientId, req.IpAddress, req.Password, req.LoginType,
+                    req.Finger, baseUrl, matchUrl, isEncrypt);
             }
             else
             {
-                var (jwt, error, refreshToken) = await _userManager.AuthenticateUser(
-                req.Nik, req.ClientId, req.IpAddress, req.Password, req.LoginType, req.Finger, BaseUrl, MatchImageBase64ToBase64, isEncrypt);
+                (jwt, error, refreshToken) = await _userManager.AuthenticateUser(
+                    req.Nik, req.ClientId, req.IpAddress, req.Password, req.LoginType,
+                    req.Finger, baseUrl, matchUrl, isEncrypt);
+            }
 
-                if (string.IsNullOrWhiteSpace(jwt))
+            if (string.IsNullOrWhiteSpace(jwt) && !string.IsNullOrWhiteSpace(error) && !(error ?? "null").StartsWith("91"))
+            {
+                var errorResponse = new ServiceResponse<AuthAgentRes>
                 {
-                    return new ServiceResponse<AuthAgentRes> { Message = error, Status = (int)ServiceResponseStatus.ERROR };
-                }
+                    Message = error,
+                    Status = (int)ServiceResponseStatus.ERROR
+                };
 
-                return new ServiceResponse<AuthAgentRes>
+                return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
+            }
+
+            if (string.IsNullOrWhiteSpace(jwt) && !string.IsNullOrWhiteSpace(error))
+            {
+                var errorResponse = new ServiceResponse<AuthAgentRes>
+                {
+                    Message = error,
+                    Status = (int)ServiceResponseStatus.ERROR
+                };
+
+                return StatusCode(StatusCodes.Status200OK, errorResponse);
+            }
+            else
+            {
+                var successResponse = new ServiceResponse<AuthAgentRes>
                 {
                     Status = (int)ServiceResponseStatus.SUKSES,
                     Message = nameof(ServiceResponseStatus.SUKSES),
@@ -180,17 +246,19 @@ namespace Ekr.Api.Identity.Controllers
                         RefreshToken = refreshToken
                     }
                 };
+
+                return Ok(successResponse);
             }
         }
         #endregion
 
 
-            #region encrypted login
+        #region encrypted login
         [HttpPost("user-encrypted")]
         [ProducesResponseType(typeof(ServiceResponse<AuthAgentRes>), 200)]
         [ProducesResponseType(500)]
         [LogActivity(Keterangan = "Login User")]
-        public async Task<ServiceResponse<AuthAgentRes>> LoginUserEncrypted( EncryptNikPassword obj)
+        public async Task<IActionResult> LoginUserEncrypted( EncryptNikPassword obj)
         {
             var isEncrypt = _config.GetValue<bool>("isEncrypt");
             var isLimited = _config.GetValue<bool>("isLimited");
@@ -202,6 +270,7 @@ namespace Ekr.Api.Identity.Controllers
             //var repData = objDecrypt.Replace("=", ":");
             var resData = JsonConvert.DeserializeObject<AuthUserReq>(objDecrypt);
             //var resData = JsonConvert.DeserializeObject<AuthUserReq>(repData);
+            //string jwt, error, refreshToken;
 
             var req = new AuthUserReq {
                 Nik = resData.Nik,
@@ -214,47 +283,88 @@ namespace Ekr.Api.Identity.Controllers
 
             if (isLimited)
             {
-                var (jwt, error, refreshToken) = await _userManager.AuthenticateUserLimited(
+               var  (jwt, error, refreshToken) = await _userManager.AuthenticateUserLimited(
                 req.Nik, req.ClientId, req.IpAddress, req.Password, req.LoginType, req.Finger, BaseUrl, MatchImageBase64ToBase64, isEncrypt);
 
-                if (string.IsNullOrWhiteSpace(jwt))
+                if (string.IsNullOrWhiteSpace(jwt) && !string.IsNullOrWhiteSpace(error) && !(error ?? "null").StartsWith("91"))
                 {
-                    return new ServiceResponse<AuthAgentRes> { Message = error, Status = (int)ServiceResponseStatus.ERROR };
+                    var errorResponse = new ServiceResponse<AuthAgentRes>
+                    {
+                        Message = error,
+                        Status = (int)ServiceResponseStatus.ERROR
+                    };
+
+                    return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
                 }
 
-                return new ServiceResponse<AuthAgentRes>
+                if (string.IsNullOrWhiteSpace(jwt) && !string.IsNullOrWhiteSpace(error))
                 {
-                    Status = (int)ServiceResponseStatus.SUKSES,
-                    Message = nameof(ServiceResponseStatus.SUKSES),
-                    Data = new AuthAgentRes
+                    var errorResponse = new ServiceResponse<AuthAgentRes>
                     {
-                        JwtToken = jwt,
-                        RefreshToken = refreshToken
-                    }
-                };
+                        Message = error,
+                        Status = (int)ServiceResponseStatus.ERROR
+                    };
 
+                    return StatusCode(StatusCodes.Status200OK, errorResponse);
+                }
+                else
+                {
+                    var successResponse = new ServiceResponse<AuthAgentRes>
+                    {
+                        Status = (int)ServiceResponseStatus.SUKSES,
+                        Message = nameof(ServiceResponseStatus.SUKSES),
+                        Data = new AuthAgentRes
+                        {
+                            JwtToken = jwt,
+                            RefreshToken = refreshToken
+                        }
+                    };
+
+                    return Ok(successResponse);
+                }
             }
             else
             {
-                var (jwt, error, refreshToken) = await _userManager.AuthenticateUser(
+               var (jwt, error, refreshToken) = await _userManager.AuthenticateUser(
                 req.Nik, req.ClientId, req.IpAddress, req.Password, req.LoginType, req.Finger, BaseUrl, MatchImageBase64ToBase64, isEncrypt);
-
-                if (string.IsNullOrWhiteSpace(jwt))
+                if (string.IsNullOrWhiteSpace(jwt) && !string.IsNullOrWhiteSpace(error) && !(error ?? "null").StartsWith("91"))
                 {
-                    return new ServiceResponse<AuthAgentRes> { Message = error, Status = (int)ServiceResponseStatus.ERROR };
+                    var errorResponse = new ServiceResponse<AuthAgentRes>
+                    {
+                        Message = error,
+                        Status = (int)ServiceResponseStatus.ERROR
+                    };
+
+                    return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
                 }
 
-                return new ServiceResponse<AuthAgentRes>
+                if (string.IsNullOrWhiteSpace(jwt) && !string.IsNullOrWhiteSpace(error))
                 {
-                    Status = (int)ServiceResponseStatus.SUKSES,
-                    Message = nameof(ServiceResponseStatus.SUKSES),
-                    Data = new AuthAgentRes
+                    var errorResponse = new ServiceResponse<AuthAgentRes>
                     {
-                        JwtToken = jwt,
-                        RefreshToken = refreshToken
-                    }
-                };
+                        Message = error,
+                        Status = (int)ServiceResponseStatus.ERROR
+                    };
+
+                    return StatusCode(StatusCodes.Status200OK, errorResponse);
+                }
+                else
+                {
+                    var successResponse = new ServiceResponse<AuthAgentRes>
+                    {
+                        Status = (int)ServiceResponseStatus.SUKSES,
+                        Message = nameof(ServiceResponseStatus.SUKSES),
+                        Data = new AuthAgentRes
+                        {
+                            JwtToken = jwt,
+                            RefreshToken = refreshToken
+                        }
+                    };
+
+                    return Ok(successResponse);
+                }
             }
+
         }
         #endregion
         #endregion
