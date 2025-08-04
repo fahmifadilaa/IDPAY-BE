@@ -20333,5 +20333,128 @@ namespace Ekr.Business.EnrollmentNoMatching
                 return new ScanResponseEncrypt() { err_code = 500, err_msg = "FAILED!" };
             }
         }
+        public async Task<ServiceResponseFR<IKDConsentResponse>> GetConsentIKDAsync(ScanQRIKDConsentReq req, UrlRequestRecognitionFR UrlReq)
+        {
+            var response = new ServiceResponseFR<IKDConsentResponse>();
+
+            try
+            {
+                var data = await _httpRequestService.SendPostRequestIgnoreSSLAsync<IKDConsentResponse, ScanQRIKDConsentReq>(
+                     UrlReq.EndPoint,
+                    SendMethodByContentType.RAW,
+                    UrlReq.BaseUrl,
+                    req
+                );
+
+                response.Data = data;
+                response.Message = data.responseMessage;
+                response.Code = int.TryParse(data.responseCode, out int code) ? code : 500;
+                response.Status = response.Code == 200 ? 1 : 0;
+
+                if (data.responseCode.Contains("9"))
+                {
+                    var err = new Tbl_LogError
+                    {
+                        InnerException = data.responseMessage,
+                        CreatedAt = DateTime.Now,
+                        Message = JsonConvert.SerializeObject(data),
+                        Payload = JsonConvert.SerializeObject(req),
+                        Source = "GetConsentIKD",
+                        StackTrace = "GetConsentIKD",
+                        SystemName = "Get Consent IKD"
+                    };
+
+                    _errorLogRepository.CreateErrorLog(err);
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                var err = new Tbl_LogError
+                {
+                    InnerException = ex.InnerException?.Message ?? "",
+                    CreatedAt = DateTime.Now,
+                    Message = ex.Message,
+                    Payload = JsonConvert.SerializeObject(req),
+                    Source = ex.Source,
+                    StackTrace = ex.StackTrace,
+                    SystemName = "Get Consent IKD"
+                };
+
+                _errorLogRepository.CreateErrorLog(err);
+
+                return new ServiceResponseFR<IKDConsentResponse>
+                {
+                    Code = 500,
+                    Message = "INTERNAL SERVER ERROR",
+                    Status = 0,
+                    Data = null
+                };
+            }
+        }
+
+
+        public async Task<ServiceResponseFR<IKDDataResponse>> GetDataIKDEncrypt(ScanIKDGetData req, UrlRequestRecognitionFR UrlReq, string aesKey)
+        {
+            var response = new ServiceResponseFR<IKDDataResponse>();
+
+            try
+            {
+                var data = await _httpRequestService.SendPostRequestIgnoreSSLAsync<IKDDataResponse, ScanIKDGetData>(
+                    UrlReq.EndPoint,
+                    SendMethodByContentType.RAW,
+                    UrlReq.BaseUrl,
+                    req
+                );
+
+                response.Data = data;
+                response.Message = data.responseMessage;
+                response.Code = int.TryParse(data.responseCode, out int code) ? code : 500;
+                response.Status = response.Code == 200 ? 1 : 0;
+
+                if (data.responseCode.Contains("9"))
+                {
+                    var err = new Tbl_LogError
+                    {
+                        InnerException = data.responseMessage,
+                        CreatedAt = DateTime.Now,
+                        Message = JsonConvert.SerializeObject(data),
+                        Payload = JsonConvert.SerializeObject(req),
+                        Source = "GetDataIKD",
+                        StackTrace = "GetDataIKD",
+                        SystemName = "Get Data IKD"
+                    };
+
+                    _errorLogRepository.CreateErrorLog(err);
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                var err = new Tbl_LogError
+                {
+                    InnerException = ex.InnerException?.Message ?? "",
+                    CreatedAt = DateTime.Now,
+                    Message = ex.Message,
+                    Payload = JsonConvert.SerializeObject(req),
+                    Source = ex.Source,
+                    StackTrace = ex.StackTrace,
+                    SystemName = "Get Data IKD"
+                };
+
+                _errorLogRepository.CreateErrorLog(err);
+
+
+                return new ServiceResponseFR<IKDDataResponse>
+                {
+                    Code = 500,
+                    Message = "INTERNAL SERVER ERROR",
+                    Status = 0,
+                    Data = null
+                };
+            }
+        }
     }
 }

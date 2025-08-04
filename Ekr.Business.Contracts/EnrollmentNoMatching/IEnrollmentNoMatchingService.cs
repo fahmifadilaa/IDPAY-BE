@@ -63,5 +63,7 @@ namespace Ekr.Business.Contracts.EnrollmentNoMatching
         Task<ScanResponseEncrypt> ScanQRIKDEncrypt(ScanQRIKDV2Req req, UrlRequestRecognitionFR UrlReq, string aesKey);
         Task<CrawlingSubContent> CrawlingDukcapilHIT(CrawlingRequest req, UrlRequestCrawlingDukcapil UrlReq);
         Task<FaceRecogResponse> MatchUrlImagesToBase64Json(FaceRecogRequest req, UrlRequestRecognitionFR UrlReq);
+        Task<ServiceResponseFR<IKDConsentResponse>> GetConsentIKDAsync(ScanQRIKDConsentReq req, UrlRequestRecognitionFR UrlReq);
+        Task<ServiceResponseFR<IKDDataResponse>> GetDataIKDEncrypt(ScanIKDGetData req, UrlRequestRecognitionFR UrlReq, string aesKey);
     }
 }
