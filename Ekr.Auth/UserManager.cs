@@ -197,7 +197,6 @@ namespace Ekr.Auth
 
                 if (LdapConf)
                 {
-                    dataLdap = GetLdap(ldap, nik, password); // dikomen ampe ISU udh clear
 
                     #region SSO Login with LDAP ISU -- dikomen dulu ampe ISU nya clear
                     if (datas == null || datas.LDAPLogin == true)
@@ -213,6 +212,9 @@ namespace Ekr.Auth
                         //    return ("", _errorMessageConfig.CredentialSalah, "");
                         //}
                         // Error Response and null handling 
+
+
+                        dataLdap = GetLdap(ldap, nik, password); // dikomen ampe ISU udh clear
 
                         if (string.IsNullOrEmpty(dataLdap?.npp) && !string.IsNullOrEmpty(dataLdap?.AccountStatus) || ((dataLdap?.npp ?? "NULL").Contains("credential") && !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
                         {
@@ -248,7 +250,7 @@ namespace Ekr.Auth
                         //}
                         // Error Response And Null Handling
 
-                        if (!string.IsNullOrEmpty(dataLdap?.IbsRole ) && dataLdap?.npp == nik && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI")) // null handling jika dari ldapnya rolenya  null
+                        if (!string.IsNullOrEmpty(dataLdap?.IbsRole ) && dataLdap?.npp == nik ) // null handling jika dari ldapnya rolenya  null
                         {
                             LdapLookup = await _lookupRepository.GetByType(dataLdap.IbsRole?.ToUpper());
 
@@ -257,7 +259,7 @@ namespace Ekr.Auth
                                 return ("", _errorMessageConfig.RoleNotRegistered, "");
                             }
                         }
-                        else if (string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
+                        else if (string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik )
                         {
                             LdapLookup = null;
                             return ("", _errorMessageConfig.LDAPRoleNull, "");
@@ -552,13 +554,14 @@ namespace Ekr.Auth
                             #endregion
 
                             if (LdapConf)
-                            {
-                                dataLdap = GetLdap(ldap, nik, password); // dikomen ampe ISU udh clear
+                            { // dikomen ampe ISU udh clear
 
                                 #region SSO Login with LDAP ISU -- dikomen dulu ampe ISU nya clear
                                 if (datas == null || datas.LDAPLogin == true)
                                 {
-                                    if (string.IsNullOrEmpty(dataLdap?.npp) && !string.IsNullOrEmpty(dataLdap?.AccountStatus) || ((dataLdap?.npp ?? "NULL").Contains("credential") && (dataLdap?.npp ?? "NULL") != "Gagal Terhubung Dengan LDAP."))
+
+                                    dataLdap = GetLdap(ldap, nik, password);
+                                    if (string.IsNullOrEmpty(dataLdap?.npp) && !string.IsNullOrEmpty(dataLdap?.AccountStatus) || ((dataLdap?.npp ?? "NULL").Contains("credential") && !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
                                     {
                                         if (checkSession != null)
                                         {
@@ -657,7 +660,7 @@ namespace Ekr.Auth
                                     //    return ("", _errorMessageConfig.CredentialSalah, "");
                                     //}
 
-                                    if (!string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI")) // null handling jika dari ldapnya rolenya  null
+                                    if (!string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik ) // null handling jika dari ldapnya rolenya  null
                                     {
                                         LdapLookup = await _lookupRepository.GetByType(dataLdap.IbsRole.ToUpper());
 
@@ -678,7 +681,7 @@ namespace Ekr.Auth
                                             return ("", _errorMessageConfig.RoleNotRegistered, "");
                                         }
                                     }
-                                    else if (string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik &&!(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
+                                    else if (string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik )
                                     {
                                         LdapLookup = null;
                                         if (checkSession != null)
@@ -939,7 +942,7 @@ namespace Ekr.Auth
                             return ("", _errorMessageConfig.CredentialSalah, "");
                         }
 
-                        if (datas.Role_Id == null && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
+                        if (datas.Role_Id == null )
                         {
                             if (checkSession != null)
                             {
@@ -1106,12 +1109,13 @@ namespace Ekr.Auth
 
                         if (LdapConf)
                         {
-                            dataLdap = GetLdap(ldap, nik, password); // dikomen ampe ISU udh clear
+                             // dikomen ampe ISU udh clear
 
                             #region SSO Login with LDAP ISU -- dikomen dulu ampe ISU nya clear
                             if (datas == null || datas.LDAPLogin == true)
                             {
-                               if (string.IsNullOrEmpty(dataLdap?.npp) || ((dataLdap?.npp ?? "NULL").Contains("credential") &&  !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
+                                dataLdap = GetLdap(ldap, nik, password);
+                                if (string.IsNullOrEmpty(dataLdap?.npp) || ((dataLdap?.npp ?? "NULL").Contains("credential") &&  !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
                                {
                                     if (checkSession != null)
                                     {
@@ -1211,7 +1215,7 @@ namespace Ekr.Auth
                                 //    return ("", _errorMessageConfig.CredentialSalah, "");
                                 //} 
 
-                                if (!string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI")) // null handling jika dari ldapnya rolenya  null
+                                if (!string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik ) // null handling jika dari ldapnya rolenya  null
                                 {
                                     LdapLookup = await _lookupRepository.GetByType(dataLdap.IbsRole?.ToUpper());
 
@@ -1233,7 +1237,7 @@ namespace Ekr.Auth
                                         return ("", _errorMessageConfig.RoleNotRegistered, "");
                                     }
                                 }
-                                else if (string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
+                                else if (string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik )
                                 {
                                     LdapLookup = null; if (checkSession != null)
                                     {
@@ -1655,11 +1659,12 @@ namespace Ekr.Auth
 
                     if (LdapConf)
                     {
-                        dataLdap = GetLdap(ldap, nik, password); // dikomen ampe ISU udh clear
+                         // dikomen ampe ISU udh clear
 
                         #region SSO Login with LDAP ISU -- dikomen dulu ampe ISU nya clear
                         if (datas == null || datas.LDAPLogin == true)
                         {
+                            dataLdap = GetLdap(ldap, nik, password);
                             if (string.IsNullOrEmpty(dataLdap?.npp) || ((dataLdap?.npp ?? "NULL").Contains("credential") && !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
                             {
 
@@ -1747,7 +1752,7 @@ namespace Ekr.Auth
                             //    return ("", _errorMessageConfig.CredentialSalah, "");
                             //}
 
-                            if (!string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI")) // null handling jika dari ldapnya rolenya  null
+                            if (!string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik ) // null handling jika dari ldapnya rolenya  null
                             {
                                 LdapLookup = await _lookupRepository.GetByType(dataLdap.IbsRole?.ToUpper());
 
@@ -1769,7 +1774,7 @@ namespace Ekr.Auth
                                     return ("", _errorMessageConfig.RoleNotRegistered, "");
                                 }
                             }
-                            else if (string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik && !(dataLdap?.posisi ?? "").ToUpper().Contains("CUTI"))
+                            else if (string.IsNullOrEmpty(dataLdap?.IbsRole) && dataLdap?.npp == nik)
                             {
                                 LdapLookup = null;
                                 if (checkSession != null)
@@ -2245,11 +2250,11 @@ namespace Ekr.Auth
 
                     var numb = _errorLogRepository.CreateErrorLog(err);
                 }
-                if (string.IsNullOrEmpty(_.data.npp) && (_.err ?? "NULL").Contains("credential") && _.status == true)
+                if (string.IsNullOrEmpty(_.data.npp) && (_.err ?? "NULL").Contains("credential") && _.status == true || (_.err ?? "NULL").Contains("Administrator"))
                 {
-                    _.data.npp = _.err;  //error ldap salah password
+                    _.data.npp = "The supplied credential is invalid.";  //error ldap salah password
                 }
-                if (_.data.npp == null && (_.err ?? "NULL").Contains("The LDAP server is unavailable. ") && _.status == true )
+                if (string.IsNullOrEmpty(_.data.npp) && (_.err ?? "NULL").Contains("The LDAP server is unavailable. ") && !(_.err ?? "NULL").Contains("credential") && _.status == true )
                 { 
                     _.data.npp = "The LDAP server is unavailable. ";
                 }
