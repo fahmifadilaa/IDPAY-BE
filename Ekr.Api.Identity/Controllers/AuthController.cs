@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NPOI.OpenXmlFormats.Wordprocessing;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -221,7 +222,8 @@ namespace Ekr.Api.Identity.Controllers
                     Status = (int)ServiceResponseStatus.ERROR
                 };
 
-                return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
+                throw new Exception(error);
+                //return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
             }
 
             if (string.IsNullOrWhiteSpace(jwt) && !string.IsNullOrWhiteSpace(error))
@@ -294,7 +296,9 @@ namespace Ekr.Api.Identity.Controllers
                         Status = (int)ServiceResponseStatus.ERROR
                     };
 
-                    return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
+                    throw new Exception(error);
+
+                    //return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
                 }
 
                 if (string.IsNullOrWhiteSpace(jwt) && !string.IsNullOrWhiteSpace(error))

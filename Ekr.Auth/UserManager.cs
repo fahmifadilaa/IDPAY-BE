@@ -216,6 +216,8 @@ namespace Ekr.Auth
 
                         dataLdap = GetLdap(ldap, nik, password); // dikomen ampe ISU udh clear
 
+                         
+
                         if (string.IsNullOrEmpty(dataLdap?.npp) && !string.IsNullOrEmpty(dataLdap?.AccountStatus) || ((dataLdap?.npp ?? "NULL").Contains("credential") && !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
                         {
                             return ("", _errorMessageConfig.CredentialSalah, "");
@@ -561,6 +563,7 @@ namespace Ekr.Auth
                                 {
 
                                     dataLdap = GetLdap(ldap, nik, password);
+                                     
                                     if (string.IsNullOrEmpty(dataLdap?.npp) && !string.IsNullOrEmpty(dataLdap?.AccountStatus) || ((dataLdap?.npp ?? "NULL").Contains("credential") && !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
                                     {
                                         if (checkSession != null)
@@ -717,7 +720,7 @@ namespace Ekr.Auth
 
                                     //    return ("", _errorMessageConfig.CredentialSalah, "");
                                     //}
-                                    if (LdapUnit != null || LdapLookup != null || dataLdap?.nama != null ||dataLdap.email != null)
+                                    if (LdapUnit != null && LdapLookup != null && dataLdap?.nama != null && dataLdap.email != null)
                                     {
                                         createPegawai = new UserVM
                                         {
@@ -1109,14 +1112,15 @@ namespace Ekr.Auth
 
                         if (LdapConf)
                         {
-                             // dikomen ampe ISU udh clear
-
+                            // dikomen ampe ISU udh clear
+                            
                             #region SSO Login with LDAP ISU -- dikomen dulu ampe ISU nya clear
                             if (datas == null || datas.LDAPLogin == true)
                             {
                                 dataLdap = GetLdap(ldap, nik, password);
-                                if (string.IsNullOrEmpty(dataLdap?.npp) || ((dataLdap?.npp ?? "NULL").Contains("credential") &&  !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
-                               {
+                                 
+                                if (string.IsNullOrEmpty(dataLdap?.npp) && !string.IsNullOrEmpty(dataLdap?.AccountStatus) || ((dataLdap?.npp ?? "NULL").Contains("credential") && !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
+                                {
                                     if (checkSession != null)
                                     {
                                         updatedSession = new Tbl_Login_Session
@@ -1255,7 +1259,7 @@ namespace Ekr.Auth
                                     return ("", _errorMessageConfig.LDAPRoleNull, "");
                                     //return ("", _errorMessageConfig.CredentialSalah, ""); Error Handling Mapping
                                 }
-                                if (LdapUnit != null || LdapLookup != null || dataLdap?.email != null || dataLdap?.nama != null)
+                                if (LdapUnit != null && LdapLookup != null && dataLdap?.email != null && dataLdap?.nama != null)
                                 {
                                     createPegawai = new UserVM
                                     {
@@ -1665,6 +1669,7 @@ namespace Ekr.Auth
                         if (datas == null || datas.LDAPLogin == true)
                         {
                             dataLdap = GetLdap(ldap, nik, password);
+                             
                             if (string.IsNullOrEmpty(dataLdap?.npp) || ((dataLdap?.npp ?? "NULL").Contains("credential") && !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
                             {
 

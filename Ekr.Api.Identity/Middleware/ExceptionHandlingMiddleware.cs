@@ -44,16 +44,32 @@ namespace Ekr.Api.Identity.Middleware
 
                 var numb = _errorLogRepository.CreateErrorLog(err);
 
-                var res = new ExceptionDto
-                {
-                    ExceptionMessage = "91501 || Something wrong happen, please contact our administrator! ",
-                    TicketNumber = numb.ToString(),
-                    ExceptionTrace = e
-                };
 
-                httpContext.Response.ContentType = "application/json";
-                httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(res));
+                if (e.Message.Contains("LDAP"))
+                {
+                    var res = new ExceptionDto
+                    {
+                        ExceptionMessage = e.Message,
+                        TicketNumber = numb.ToString(),
+                        ExceptionTrace = e
+                    };
+
+                    httpContext.Response.ContentType = "application/json";
+                    httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(res));
+                }
+                else {
+                    var res = new ExceptionDto
+                    {
+                        ExceptionMessage = "91501 || Something wrong happen, please contact our administrator! ",
+                        TicketNumber = numb.ToString(),
+                        ExceptionTrace = e
+                    };
+
+                    httpContext.Response.ContentType = "application/json";
+                    httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(res));
+                }
             }
         }
     }
