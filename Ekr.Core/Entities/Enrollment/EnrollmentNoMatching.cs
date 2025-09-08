@@ -75,6 +75,47 @@ namespace Ekr.Core.Entities.Enrollment
         public string channel { get; set; }
     }
 
+    public class ScanQRIKDGetData
+    {
+        public string channel { get; set; }
+    }
+    public class ScanQRIKDConsentReq
+    {
+        public string channel { get; set; }
+        public QrCodeObject qrCode { get; set; }
+    }
+
+    public class QrCodeObject
+    {
+        public string granted_by { get; set; }
+        public string url_ref_id { get; set; }
+        public string id { get; set; }
+        public string category { get; set; }
+    }
+    public class ScanIKDGetData
+    {
+        public string channel { get; set; }
+        public string trxId { get; set; }
+    }
+
+    public class IKDConsentResponse
+    {
+        public string trxId { get; set; }
+        public string responseCode { get; set; }
+        public string responseMessage { get; set; }
+        public string status { get; set; }
+    }
+
+    public class IKDDataResponse
+    {
+        public string responseCode { get; set; }
+        public string responseMessage { get; set; }
+        public int err_code { get; set; }
+        public string err_msg { get; set; }
+        public string status { get; set; }
+        public IKDObject data { get; set; }
+    }
+
     public class EnrollNoMatchingStatusRequest : EnrollNoMatchingRequest
     {
         public int Status { get; set; }

@@ -41,7 +41,7 @@ namespace Ekr.Api.EnrollmentIKD.Controllers.DataEnrollment
     {
         private readonly IEnrollmentNoMatchingService _enrollmentService;
         private readonly IEnrollmentNoMatchingRepository _enrollmentKTPRepository;
-      
+
         private readonly ICIFService _cifService;
         private readonly IConfiguration _configuration;
         private readonly IUtilityRepository _utilityRepository;
@@ -271,7 +271,7 @@ namespace Ekr.Api.EnrollmentIKD.Controllers.DataEnrollment
 
         #region scan-qr-ikd new (20240102)
 
-            #region scan qr ikd encrypted
+        #region scan qr ikd encrypted
         [HttpPost("scan-qr-ikd")]
         [ProducesResponseType(typeof(ServiceResponseFR<ScanResponse>), 200)]
         [ProducesResponseType(500)]
@@ -351,11 +351,11 @@ namespace Ekr.Api.EnrollmentIKD.Controllers.DataEnrollment
 
             }
 
-           
+
         }
         #endregion
 
-            #region scan qr ikd not encrypted
+        #region scan qr ikd not encrypted
         [HttpPost("scan-qr-ikd-v3")]
         [ProducesResponseType(typeof(ServiceResponseFR<ScanResponse>), 200)]
         [ProducesResponseType(500)]
@@ -434,7 +434,7 @@ namespace Ekr.Api.EnrollmentIKD.Controllers.DataEnrollment
 
             }
         }
-            #endregion
+        #endregion
 
         #endregion
 
@@ -458,7 +458,7 @@ namespace Ekr.Api.EnrollmentIKD.Controllers.DataEnrollment
             var channel = _configuration.GetValue<string>("UrlScanIKD:channel");
 
             req.api_key = APIKEY;
-            req.client_key = CLIENTKEy; 
+            req.client_key = CLIENTKEy;
             req.channel = channel;
 
             if (string.IsNullOrWhiteSpace(authorization))
@@ -527,5 +527,92 @@ namespace Ekr.Api.EnrollmentIKD.Controllers.DataEnrollment
 
             return data;
         }
+
+
+        [HttpPost("scan-qr-ikd-get-consent")]
+        [ProducesResponseType(typeof(ServiceResponseFR<IKDConsentResponse>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "Request consent IKD using QR")]
+        public async Task<IActionResult> GetConsentIKD(ScanQRIKDConsentReq req)
+        {
+            string authorization = HttpContext.Request.Headers["Authorization"];
+
+            var env = _configuration.GetValue<bool>("UrlScanIKD:IsProd");
+            var BaseUrl = _configuration.GetValue<string>("UrlScanIKD:BaseUrl");
+            var EndPoint = _configuration.GetValue<string>("UrlScanIKD:EndPointConsent");
+
+            req.channel = _configuration.GetValue<string>("UrlScanIKD:channel");
+
+            var urlRequest = new UrlRequestRecognitionFR
+            {
+                BaseUrl = BaseUrl,
+                EndPoint = EndPoint,
+                Env = env
+            };
+
+            try
+            {
+                var response = await _enrollmentService.GetConsentIKDAsync(req, urlRequest);
+                return Ok(response);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new ScanResponseEncrypt
+                {
+                    err_code = 500,
+                    err_msg = "INTERNAL SERVER ERROR"
+                });
+            }
+        }
+
+        [HttpPost("scan-qr-ikd-get-data")]
+        [ProducesResponseType(typeof(ServiceResponseFR<IKDDataResponse>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "get data ikd from trxId")]
+        public async Task<IActionResult> GetDataIKD(ScanIKDGetData req)
+        {
+            string authorization = HttpContext.Request.Headers["Authorization"];
+
+            var env = _configuration.GetValue<bool>("UrlScanIKD:IsProd");
+            var baseUrl = _configuration.GetValue<string>("UrlScanIKD:BaseUrl");
+            var EndPoint = _configuration.GetValue<string>("UrlScanIKD:EndPointData");
+            var isLimit = _configuration.GetValue<bool>("UrlScanIKD:isLimitAttempts");
+            int maxLimit = _configuration.GetValue<int>("UrlScanIKD:max_attempts");
+            int timeLimit = _configuration.GetValue<int>("UrlScanIKD:time_limit");
+            var aesKey = _configuration.GetValue<string>("AesKey");
+
+            req.channel = _configuration.GetValue<string>("UrlScanIKD:channel");
+
+            var urlRequest = new UrlRequestRecognitionFR
+            {
+                BaseUrl = baseUrl,
+                EndPoint = EndPoint,
+                Env = env
+            };
+
+            try
+            {
+                var result = await _enrollmentService.GetDataIKDEncrypt(req, urlRequest, aesKey);
+
+                return Ok(new ServiceResponseFR<IKDDataResponse>
+                {
+                    Message = result.Message,
+                    Status = result.Status,
+                    Code = result.Code,
+                    Data = result.Data
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ServiceResponseFR<IKDDataResponse>
+                {
+                    Message = "INTERNAL SERVER ERROR",
+                    Status = 0,
+                    Code = 500,
+                    Data = null
+                });
+            }
+        }
+
     }
 }
