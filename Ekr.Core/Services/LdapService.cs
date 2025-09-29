@@ -40,77 +40,88 @@ public class LdapService : ILdapService
         if (sNPP.Contains("admin"))
             return (true, "", ldapInfo);
 
-        //"BindError: The LDAP server is unavailable.
-
-        if (connection?.SessionOptions?.DomainName != null &&  connection.SessionOptions.DomainName != "OK")
-        {
-            return (true, $"LDAP Error: The LDAP server is unavailable. ", new LdapInfo());
-
-        }
+ 
             bool isConnectionBroken = false;
-
-        try
+        if (connection != null)
         {
-            connection.Bind(new NetworkCredential(userDn, password));
+            try
+            {
+                connection.Bind(new NetworkCredential(userDn, password));
 
-            var request = new SearchRequest(
-                conf.LdapHierarchy,
-                $"(uid={sNPP})",
-                SearchScope.Subtree,
-                new[] {
+                var request = new SearchRequest(
+                    conf.LdapHierarchy,
+                    $"(uid={sNPP})",
+                    SearchScope.Subtree,
+                    new[] {
                     "uid", "sn", "mail", "title", "kode_outlet", "nama_outlet",
                     "branchalias", "userpassword", "Accountstatus"
+                    }
+                );
+
+                var response = (SearchResponse)connection.SendRequest(request);
+
+                if (response.Entries.Count == 0)
+                    return (false, "User not found", null);
+
+                var entry = response.Entries[0];
+                ldapInfo.npp = entry.Attributes["uid"]?[0]?.ToString();
+                ldapInfo.nama = entry.Attributes["sn"]?[0]?.ToString();
+                ldapInfo.email = entry.Attributes["mail"]?[0]?.ToString();
+                ldapInfo.posisi = entry.Attributes["title"]?[0]?.ToString();
+                ldapInfo.kode_outlet = DecodeIfByte(entry, "kode_outlet");
+                ldapInfo.nama_outlet = DecodeIfByte(entry, "nama_outlet");
+                ldapInfo.branchalias = DecodeIfByte(entry, "branchalias");
+                ldapInfo.AccountStatus = DecodeIfByte(entry, "Accountstatus");
+                ldapInfo.password = DecodeIfByte(entry, "userpassword");
+                ldapInfo.LdapUrl = conf.Url;
+                ldapInfo.LdapHierarchy = conf.LdapHierarchy;
+
+                // ibsrole (dari ou=bniapps)
+                var ibsRequest = new SearchRequest(
+                    conf.IbsRoleLdapHierarchy,
+                    $"(uid={sNPP})",
+                    SearchScope.Subtree,
+                    new[] { "ibsrole" }
+                );
+
+                var ibsResponse = (SearchResponse)connection.SendRequest(ibsRequest);
+                if (ibsResponse.Entries.Count > 0)
+                {
+                    ldapInfo.IbsRole = DecodeIfByte(ibsResponse.Entries[0], "ibsrole");
                 }
-            );
 
-            var response = (SearchResponse)connection.SendRequest(request);
-
-            if (response.Entries.Count == 0)
-                return (false, "User not found", null);
-
-            var entry = response.Entries[0];
-            ldapInfo.npp = entry.Attributes["uid"]?[0]?.ToString();
-            ldapInfo.nama = entry.Attributes["sn"]?[0]?.ToString();
-            ldapInfo.email = entry.Attributes["mail"]?[0]?.ToString();
-            ldapInfo.posisi = entry.Attributes["title"]?[0]?.ToString();
-            ldapInfo.kode_outlet = DecodeIfByte(entry, "kode_outlet");
-            ldapInfo.nama_outlet = DecodeIfByte(entry, "nama_outlet");
-            ldapInfo.branchalias = DecodeIfByte(entry, "branchalias");
-            ldapInfo.AccountStatus = DecodeIfByte(entry, "Accountstatus");
-            ldapInfo.password = DecodeIfByte(entry, "userpassword");
-            ldapInfo.LdapUrl = conf.Url;
-            ldapInfo.LdapHierarchy = conf.LdapHierarchy;
-
-            // ibsrole (dari ou=bniapps)
-            var ibsRequest = new SearchRequest(
-                conf.IbsRoleLdapHierarchy,
-                $"(uid={sNPP})",
-                SearchScope.Subtree,
-                new[] { "ibsrole" }
-            );
-
-            var ibsResponse = (SearchResponse)connection.SendRequest(ibsRequest);
-            if (ibsResponse.Entries.Count > 0)
-            {
-                ldapInfo.IbsRole = DecodeIfByte(ibsResponse.Entries[0], "ibsrole");
+                return (true, "sukses", ldapInfo);
             }
-
-            return (true, "sukses", ldapInfo);
+            catch (LdapException ex)
+            {
+                isConnectionBroken = true;
+                return (true, $"LDAP Error: {ex.Message}", new LdapInfo());
+            }
+            catch (ObjectDisposedException ex)
+            {
+                isConnectionBroken = true;
+                return (true, $"LDAP Error: {ex.Message}", new LdapInfo());
+            }
+            catch (Exception ex)
+            {
+                isConnectionBroken = true;
+                return (true, $"Unexpected LDAP error: {ex.Message}", null);
+            }
+            finally
+            {
+                if (!isConnectionBroken)
+                {
+                    _connectionPool.ReturnConnection(connection);
+                }
+                else { 
+                    connection.Dispose();
+                    _connectionPool.RemoveFromAll(connection);
+                    }
+            }
         }
-        catch (LdapException ex)
+        else
         {
-            isConnectionBroken = true;
-            //return (false, $"LDAP Error: {ex.Message}", null);
-            return (true, $"LDAP Error: {ex.Message}", new LdapInfo());
-        }
-        
-        finally
-        {
-            if (!isConnectionBroken)
-                _connectionPool.ReturnConnection(connection);
-            else
-                connection.Dispose(); // jangan kembalikan ke pool jika rusak
-            
+            return (true, $"LDAP Error: The LDAP server is unavailable. ", new LdapInfo());
         }
     }
 

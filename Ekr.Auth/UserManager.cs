@@ -216,8 +216,11 @@ namespace Ekr.Auth
 
                         dataLdap = GetLdap(ldap, nik, password); // dikomen ampe ISU udh clear
 
+                        if (dataLdap == null)
+                        {
+                            return ("", _errorMessageConfig.LDAPService, "");
+                        }
                          
-
                         if (string.IsNullOrEmpty(dataLdap?.npp) && !string.IsNullOrEmpty(dataLdap?.AccountStatus) || ((dataLdap?.npp ?? "NULL").Contains("credential") && !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
                         {
                             return ("", _errorMessageConfig.CredentialSalah, "");
@@ -563,7 +566,12 @@ namespace Ekr.Auth
                                 {
 
                                     dataLdap = GetLdap(ldap, nik, password);
-                                     
+
+                                    if (dataLdap == null)
+                                    {
+                                        return ("", _errorMessageConfig.LDAPService, "");
+                                    }
+
                                     if (string.IsNullOrEmpty(dataLdap?.npp) && !string.IsNullOrEmpty(dataLdap?.AccountStatus) || ((dataLdap?.npp ?? "NULL").Contains("credential") && !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
                                     {
                                         if (checkSession != null)
@@ -1118,7 +1126,12 @@ namespace Ekr.Auth
                             if (datas == null || datas.LDAPLogin == true)
                             {
                                 dataLdap = GetLdap(ldap, nik, password);
-                                 
+
+                                if (dataLdap == null)
+                                {
+                                    return ("", _errorMessageConfig.LDAPService, "");
+                                }
+
                                 if (string.IsNullOrEmpty(dataLdap?.npp) && !string.IsNullOrEmpty(dataLdap?.AccountStatus) || ((dataLdap?.npp ?? "NULL").Contains("credential") && !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
                                 {
                                     if (checkSession != null)
@@ -1669,7 +1682,12 @@ namespace Ekr.Auth
                         if (datas == null || datas.LDAPLogin == true)
                         {
                             dataLdap = GetLdap(ldap, nik, password);
-                             
+
+                            if (dataLdap == null)
+                            {
+                                return ("", _errorMessageConfig.LDAPService, "");
+                            }
+
                             if (string.IsNullOrEmpty(dataLdap?.npp) || ((dataLdap?.npp ?? "NULL").Contains("credential") && !(dataLdap?.npp ?? "NULL").Contains("LDAP")))
                             {
 
@@ -2259,7 +2277,7 @@ namespace Ekr.Auth
                 {
                     _.data.npp = "The supplied credential is invalid.";  //error ldap salah password
                 }
-                if (string.IsNullOrEmpty(_.data.npp) && (_.err ?? "NULL").Contains("The LDAP server is unavailable. ") && !(_.err ?? "NULL").Contains("credential") && _.status == true )
+                if (string.IsNullOrEmpty(_.data.npp) && (_.err ?? "NULL").Contains("LDAP Error:") && !(_.err ?? "NULL").Contains("credential") && _.status == true )
                 { 
                     _.data.npp = "The LDAP server is unavailable. ";
                 }
