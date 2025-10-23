@@ -57,5 +57,7 @@
         public string LimitScanReached { get; set; }
         public string InputTidakSesuai { get; set; }
         public string LDAPService { get; set; }
+        public string LDAPUnitNull { get; set; }
+        public string LDAPRoleNull { get; set; }
     }
 }
