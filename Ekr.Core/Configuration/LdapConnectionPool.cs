@@ -7,28 +7,32 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Ekr.Core.Configuration;
+using System.IO;
 
 public class LdapConnectionPool : IAsyncDisposable
 {
     private readonly Channel<LdapConnection> _channel;
-    private readonly TimeSpan _idleTimeout = TimeSpan.FromMinutes(5);
+    private readonly TimeSpan _idleTimeout;
     private readonly TimeSpan _connectionTimeout;
     private readonly TimeSpan _PoolTimeOut;
     private readonly Timer _evictionTimer;
     private readonly string _host;
     private readonly int _port;
     private readonly int _maxSize;
-    private readonly List<(LdapConnection, DateTime)> _allConnections = new();
+
+    // Tambahkan flag InUse
+    private readonly List<(LdapConnection Conn, DateTime LastUsed, bool InUse)> _allConnections = new();
 
     public LdapConnectionPool(IOptions<LDAPConfig> config)
     {
         var ldapConfig = config.Value;
 
-        _host = ldapConfig.Url.Replace("LDAP://", "").Replace("ldap://", "");
-        _port = 389; // bisa diubah kalau ada port di config
+        _host = new Uri(ldapConfig.Url).Host;
+        _port = ldapConfig.Port;
         _maxSize = ldapConfig.MaxPoolSize > 0 ? ldapConfig.MaxPoolSize : 10;
         _connectionTimeout = TimeSpan.FromSeconds(ldapConfig.ConnTimeOut);
         _PoolTimeOut = TimeSpan.FromSeconds(ldapConfig.PoolTimeOut);
+        _idleTimeout = TimeSpan.FromSeconds(ldapConfig.IdleTimeout);
 
         _channel = Channel.CreateBounded<LdapConnection>(new BoundedChannelOptions(_maxSize)
         {
@@ -36,16 +40,29 @@ public class LdapConnectionPool : IAsyncDisposable
             SingleReader = false
         });
 
-        _evictionTimer = new Timer(EvictIdleConnections, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+        _evictionTimer = new Timer(EvictIdleConnections, null, _idleTimeout, _idleTimeout);
     }
 
     public async Task<LdapConnection?> RentConnectionAsync(TimeSpan? timeout = null)
     {
-
         if (_channel.Reader.TryRead(out var conn))
         {
-            Console.WriteLine($"[LDAP POOL] Reuse connection at {DateTime.UtcNow}");
-            return conn;
+            if (IsConnectionAlive(conn))
+            {
+                UpdateLastUsed(conn);
+                MarkInUse(conn, true);
+                Console.WriteLine($"[LDAP POOL] Reuse connection at {DateTime.UtcNow}");
+                LogPoolMetrics("Rent Success (reuse)");
+                return conn;
+            }
+            else
+            {
+                Console.WriteLine("[LDAP POOL] Disposing dead connection.");
+                LogPoolMetrics("Rent - disposed");
+                conn.Dispose();
+                RemoveFromAll(conn);
+                return null;
+            }
         }
 
         lock (_allConnections)
@@ -53,27 +70,39 @@ public class LdapConnectionPool : IAsyncDisposable
             if (_allConnections.Count < _maxSize)
             {
                 var connection = CreateConnection();
-                if (connection != null)
+                if (connection != null && IsConnectionAlive(connection))
                 {
-                    _allConnections.Add((connection, DateTime.UtcNow));
+                    _allConnections.Add((connection, DateTime.UtcNow, true)); // langsung tandai in use
                     Console.WriteLine($"[LDAP POOL] Created new connection at {DateTime.UtcNow}");
+                    LogPoolMetrics("Rent success (new)");
                     return connection;
                 }
-                else 
+                else
                 {
-                     return connection;
-
+                    connection?.Dispose();
+                    return null;
                 }
             }
         }
 
         try
         {
-            timeout = _PoolTimeOut;
+            timeout ??= _PoolTimeOut;
             Console.WriteLine($"[LDAP POOL] Waiting for connection (Timeout: {timeout?.TotalSeconds ?? 10}s)...");
-            using var cts = new CancellationTokenSource(timeout ?? TimeSpan.FromSeconds(10));
+            using var cts = new CancellationTokenSource(timeout.Value);
             var rentedConn = await _channel.Reader.ReadAsync(cts.Token);
-            return rentedConn;
+            if (IsConnectionAlive(rentedConn))
+            {
+                UpdateLastUsed(rentedConn);
+                MarkInUse(rentedConn, true);
+                return rentedConn;
+            }
+            else
+            {
+                rentedConn.Dispose();
+                RemoveFromAll(rentedConn);
+                return null;
+            }
         }
         catch (OperationCanceledException)
         {
@@ -84,16 +113,32 @@ public class LdapConnectionPool : IAsyncDisposable
 
     public void ReturnConnection(LdapConnection conn)
     {
+        if (!IsConnectionAlive(conn))
+        {
+            Console.WriteLine("[LDAP POOL] Disposing broken connection on return.");
+            LogPoolMetrics("Return - disposed");
+            conn.Dispose();
+            RemoveFromAll(conn);
+            return;
+        }
+
+        UpdateLastUsed(conn);
+        MarkInUse(conn, false);
+
         if (!_channel.Writer.TryWrite(conn))
         {
             Console.WriteLine("[LDAP POOL] Channel full, disposing connection.");
+            LogPoolMetrics("Return - channel full");
             conn.Dispose();
+            RemoveFromAll(conn);
         }
         else
         {
             Console.WriteLine($"[LDAP POOL] Connection returned at {DateTime.UtcNow}");
+            LogPoolMetrics("Return success");
         }
     }
+
     private LdapConnection CreateConnection()
     {
         var identifier = new LdapDirectoryIdentifier(_host, _port);
@@ -106,16 +151,9 @@ public class LdapConnectionPool : IAsyncDisposable
         string ldapAdminPassword = Environment.GetEnvironmentVariable("LDAP_AdminPassword");
         string adminDn = Environment.GetEnvironmentVariable("LDAP_AdminDn");
 
-        if (string.IsNullOrEmpty(ldapAdminPassword))
+        if (string.IsNullOrEmpty(ldapAdminPassword) || string.IsNullOrEmpty(adminDn))
         {
-            connection.SessionOptions.DomainName = "Missing LDAP_AdminPassword";
-            return connection;
-        }
-
-        if (string.IsNullOrEmpty(adminDn))
-        {
-            connection.SessionOptions.DomainName = "Missing LDAP_AdminDn";
-            return connection;
+            return null;
         }
 
         connection.SessionOptions.ProtocolVersion = 3;
@@ -123,17 +161,17 @@ public class LdapConnectionPool : IAsyncDisposable
         try
         {
             connection.Bind(new NetworkCredential(adminDn, ldapAdminPassword));
-            connection.SessionOptions.DomainName = "OK"; // ✅ tanda sukses
+            LogPoolMetrics("CreateConnection success");
         }
         catch (LdapException ex)
         {
-            connection.SessionOptions.DomainName = $"LDAP Error: {ex.Message}";
-            // Jangan lempar, tetap kembalikan connection
+            LogPoolMetrics($"CreateConnection fail - {ex.Message}");
+            connection.Dispose();
+            return null;
         }
 
         return connection;
     }
-
 
     private void EvictIdleConnections(object state)
     {
@@ -142,13 +180,13 @@ public class LdapConnectionPool : IAsyncDisposable
             var now = DateTime.UtcNow;
             _allConnections.RemoveAll(tuple =>
             {
-                var (conn, lastUsed) = tuple;
-                if (now - lastUsed > _idleTimeout)
+                if (!tuple.InUse && now - tuple.LastUsed > _idleTimeout)
                 {
                     try
                     {
                         Console.WriteLine("[LDAP POOL] Evicting idle connection.");
-                        conn.Dispose();
+                        LogPoolMetrics("EvictIdleConnections - disposed");
+                        tuple.Conn.Dispose();
                     }
                     catch { }
                     return true;
@@ -171,11 +209,104 @@ public class LdapConnectionPool : IAsyncDisposable
 
         lock (_allConnections)
         {
-            foreach (var (conn, _) in _allConnections)
+            foreach (var (conn, _, _) in _allConnections)
             {
                 conn.Dispose();
             }
             _allConnections.Clear();
         }
     }
+
+    private bool IsConnectionAlive(LdapConnection conn)
+    {
+        try
+        {
+            var request = new SearchRequest("", "(objectClass=*)", SearchScope.Base);
+            conn.SendRequest(request);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public void RemoveFromAll(LdapConnection conn)
+    {
+        lock (_allConnections)
+        {
+            _allConnections.RemoveAll(t => t.Conn == conn);
+        }
+    }
+
+    private void UpdateLastUsed(LdapConnection conn)
+    {
+        lock (_allConnections)
+        {
+            for (int i = 0; i < _allConnections.Count; i++)
+            {
+                if (_allConnections[i].Conn == conn)
+                {
+                    _allConnections[i] = (_allConnections[i].Conn, DateTime.UtcNow, _allConnections[i].InUse);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void MarkInUse(LdapConnection conn, bool inUse)
+    {
+        lock (_allConnections)
+        {
+            for (int i = 0; i < _allConnections.Count; i++)
+            {
+                if (_allConnections[i].Conn == conn)
+                {
+                    _allConnections[i] = (_allConnections[i].Conn, _allConnections[i].LastUsed, inUse);
+                    break;
+                }
+            }
+        }
+    }
+
+    #region Monitor cmd
+    private string MetricsFile
+    {
+        get
+        {
+            string datePart = DateTime.UtcNow.ToString("yyyy-MM-dd");
+            string fileName = $"ldap_pool_metrics_{datePart}.csv";
+            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", fileName);
+        }
+    }
+
+    private void LogPoolMetrics(string action)
+    {
+        lock (_allConnections)
+        {
+            int totalConnections = _allConnections.Count;
+            int channelCount = _channel.Reader.Count;
+            string logLine = $"{DateTime.UtcNow:O},{action},{totalConnections},{channelCount}";
+
+            try
+            {
+                string metricsFile = MetricsFile;
+                Directory.CreateDirectory(Path.GetDirectoryName(metricsFile));
+
+                if (!File.Exists(metricsFile))
+                {
+                    File.AppendAllText(metricsFile, "Timestamp,Action,TotalConnections,ChannelCount" + Environment.NewLine);
+                }
+
+                File.AppendAllText(metricsFile, logLine + Environment.NewLine);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LDAP POOL METRIC ERROR] {ex.Message}");
+            }
+
+            Console.WriteLine($"[LDAP POOL METRIC] {logLine}");
+        }
+    }
+    #endregion
 }
