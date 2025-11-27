@@ -1512,6 +1512,7 @@ namespace Ekr.Repository.Enrollment
                 SColumnValue = new DbString { Value = string.IsNullOrWhiteSpace(filter.SortColumnDir) ? "desc" : filter.SortColumnDir, Length = 10 },
                 Nama = new DbString { Value = string.IsNullOrWhiteSpace(filter.Nama) ? "" : filter.Nama, Length = 350 },
                 NIK = new DbString { Value = string.IsNullOrWhiteSpace(filter.NIK) ? "" : filter.NIK, Length = 50 },
+                CIF = new DbString { Value = string.IsNullOrWhiteSpace(filter.CIF) ? "" : filter.CIF, Length = 70 },
                 Page = filter.PageNumber,
                 Rows = filter.PageSize,
                 LoginPegawaiId = new DbString { Value = filter.LoginPegawaiId.ToString(), Length = 10 },
@@ -1529,6 +1530,7 @@ namespace Ekr.Repository.Enrollment
             {
                 Nama = new DbString { Value = string.IsNullOrWhiteSpace(filter.Nama) ? "" : filter.Nama, Length = 350 },
                 NIK = new DbString { Value = string.IsNullOrWhiteSpace(filter.NIK) ? "" : filter.NIK, Length = 50 },
+                CIF = new DbString { Value = string.IsNullOrWhiteSpace(filter.CIF) ? "" : filter.CIF, Length = 70 },
                 LoginPegawaiId = new DbString { Value = filter.LoginPegawaiId.ToString(), Length = 10 },
                 LoginRoleId = new DbString { Value = filter.LoginRoleId.ToString(), Length = 10 },
                 LoginUnitId = new DbString { Value = filter.LoginUnitId.ToString(), Length = 10 },

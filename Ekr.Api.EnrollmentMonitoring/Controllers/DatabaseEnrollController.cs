@@ -178,7 +178,10 @@ namespace Ekr.Api.EnrollmentMonitoring.Controllers
                     TempatLahir = i.TempatLahir,
                     EnrollBy = i.EnrollBy,
                     StatusData = i.StatusData,
-                    CIF = i.CIF
+                    CIF = i.CIF,
+                    MakerName = i.MakerName,
+                    ReviewerName = i.ReviewerName,
+                    ApproverName = i.ApproverName
                 });
             }
 

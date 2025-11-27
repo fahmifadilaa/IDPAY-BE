@@ -21,6 +21,9 @@ namespace Ekr.Core.Entities.DataEnrollment
         public string EnrollBy { get; set; }
         public string StatusData { get; set; }
         public string CIF { get; set; }
+        public string MakerName { get; set; }
+        public string ReviewerName { get; set; }
+        public string ApproverName { get; set; }
         //public string StatusEnrollment { get; set; }
     }
 
