@@ -3,8 +3,11 @@ using Ekr.Auth;
 using Ekr.Core.Constant;
 using Ekr.Core.Entities;
 using Ekr.Core.Entities.DataMaster.Unit;
+using Ekr.Core.Entities.DataMaster.Utility.ViewModel;
 using Ekr.Repository.Contracts.DataMaster.Unit;
+using Ekr.Repository.Contracts.DataMaster.Utility;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Ekr.Api.DataMaster.Controllers
@@ -14,9 +17,11 @@ namespace Ekr.Api.DataMaster.Controllers
     public class DataUnitController : ControllerBase
     {
         private readonly IUnitRepository _unitRepository;
-        public DataUnitController(IUnitRepository unitRepository)
+        private readonly IUtilityRepository _utilityRepository;
+        public DataUnitController(IUnitRepository unitRepository, IUtilityRepository utilityRepository)
         {
             _unitRepository = unitRepository;
+            _utilityRepository = utilityRepository;
         }
         /// <summary>
         /// Untuk Get All Data Unit
@@ -85,6 +90,12 @@ namespace Ekr.Api.DataMaster.Controllers
                 var claims = TokenManager.GetPrincipal(token);
                 req.CreatedById = int.Parse(claims.PegawaiId);
             }
+            
+            var TipeUnit = new LookupFilterVM();
+            TipeUnit.Type = "TipeUnit";
+            var statusOutlet = await _utilityRepository.SelectLookup(TipeUnit);
+            req.StatusOutlet = statusOutlet.Where(y=> y.Value == req.Type).Select(x => x.Name).FirstOrDefault();
+            req.KodeWilayah = req.FullCode?.Length >= 3 ? req.FullCode.Substring(3, 6) : req.FullCode;
 
             var res = await _unitRepository.Create(req);
 
@@ -114,6 +125,13 @@ namespace Ekr.Api.DataMaster.Controllers
                 var claims = TokenManager.GetPrincipal(token);
                 req.UpdatedById = int.Parse(claims.PegawaiId);
             }
+
+            var TipeUnit = new LookupFilterVM();
+            TipeUnit.Type = "TipeUnit";
+            var statusOutlet = await _utilityRepository.SelectLookup(TipeUnit);
+            req.StatusOutlet = statusOutlet.Where(y => y.Value == req.Type).Select(x => x.Name).FirstOrDefault();
+            req.KodeWilayah = req.FullCode?.Length >= 3 ? req.FullCode.Substring(3, 6) : req.FullCode;
+
 
             var res = await _unitRepository.Update(req);
 

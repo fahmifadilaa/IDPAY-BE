@@ -1,6 +1,18 @@
 {
   "Routes": [
     {
+      "DownstreamPathTemplate": "/BanchlinkCifUpdate/banchlink/update-cif-nik",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/banchlink/update-cif-nik",
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+    {
       "DownstreamPathTemplate": "/EkrAuth/auth/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -13,7 +25,10 @@
       "UpstreamHttpMethod": [
         "POST",
         "GET"
-      ]
+      ],
+      "QoSOptions": {
+        "TimeoutValue": 120000
+      }
     },
     {
       "DownstreamPathTemplate": "/DataEnrollment/profile/{everything}",
@@ -31,9 +46,7 @@
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": [
-
-        ]
+        "AllowedScopes": []
       }
     },
     {
@@ -52,9 +65,7 @@
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": [
-
-        ]
+        "AllowedScopes": []
       }
     },
     {
@@ -73,9 +84,7 @@
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": [
-
-        ]
+        "AllowedScopes": []
       }
     },
     {
@@ -94,9 +103,7 @@
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": [
-
-        ]
+        "AllowedScopes": []
       }
     },
     {
@@ -115,9 +122,7 @@
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": [
-
-        ]
+        "AllowedScopes": []
       }
     },
     {
@@ -136,9 +141,7 @@
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": [
-
-        ]
+        "AllowedScopes": []
       }
     },
     {
@@ -157,9 +160,7 @@
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": [
-
-        ]
+        "AllowedScopes": []
       }
     },
     {
@@ -178,9 +179,7 @@
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": [
-
-        ]
+        "AllowedScopes": []
       }
     },
     {
@@ -199,9 +198,7 @@
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": [
-
-        ]
+        "AllowedScopes": []
       }
     },
     {
@@ -222,9 +219,7 @@
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": [
-
-        ]
+        "AllowedScopes": []
       }
     },
     {
@@ -243,9 +238,7 @@
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": [
-
-        ]
+        "AllowedScopes": []
       }
     },
     {
@@ -264,9 +257,7 @@
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": [
-
-        ]
+        "AllowedScopes": []
       }
     },
     {
@@ -329,7 +320,7 @@
         "Get"
       ]
     },
-	{
+    {
       "DownstreamPathTemplate": "/EkrApiMessageCode/mc/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -342,8 +333,8 @@
       "UpstreamHttpMethod": [
         "Post",
         "Get",
-		"Put",
-		"Delete"
+        "Put",
+        "Delete"
       ]
     },
     {
@@ -359,8 +350,8 @@
       "UpstreamHttpMethod": [
         "Post",
         "Get",
-		"Put",
-		"Delete"
+        "Put",
+        "Delete"
       ]
     },
     {
@@ -376,8 +367,8 @@
       "UpstreamHttpMethod": [
         "Post",
         "Get",
-		"Put",
-		"Delete"
+        "Put",
+        "Delete"
       ]
     },
     {
@@ -393,8 +384,8 @@
       "UpstreamHttpMethod": [
         "Post",
         "Get",
-		"Put",
-		"Delete"
+        "Put",
+        "Delete"
       ]
     },
     {
@@ -410,11 +401,11 @@
       "UpstreamHttpMethod": [
         "Post",
         "Get",
-		"Put",
-		"Delete"
+        "Put",
+        "Delete"
       ]
     },
-	{
+    {
       "DownstreamPathTemplate": "/EnrollmentIKD/enrollment-encrypt-IKD/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -427,8 +418,8 @@
       "UpstreamHttpMethod": [
         "Post",
         "Get",
-		"Put",
-		"Delete"
+        "Put",
+        "Delete"
       ]
     },
     {
@@ -447,9 +438,7 @@
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer",
-        "AllowedScopes": [
-
-        ]
+        "AllowedScopes": []
       }
     }
   ],

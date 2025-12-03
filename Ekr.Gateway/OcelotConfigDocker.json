@@ -1,6 +1,18 @@
 {
   "Routes": [
     {
+      "DownstreamPathTemplate": "/BanchlinkCifUpdate/banchlink/update-cif-nik",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "128.199.98.41",
+          "Port": 94
+        }
+      ],
+      "UpstreamPathTemplate": "/banchlink/update-cif-nik",
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+    {
       //"DownstreamPathTemplate": "/EkrAuth/auth/{everything}",
       "DownstreamPathTemplate": "/auth/{everything}",
       "DownstreamScheme": "http",

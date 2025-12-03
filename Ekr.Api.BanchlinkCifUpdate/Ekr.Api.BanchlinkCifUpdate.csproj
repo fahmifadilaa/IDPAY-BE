@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+		<!-- Hindari copy otomatis semua dependency -->
+		<CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+	</PropertyGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Ekr.Business.Contracts\Ekr.Business.Contracts.csproj" />
+		<ProjectReference Include="..\Ekr.Business\Ekr.Business.csproj" />
+		<ProjectReference Include="..\Ekr.Core\Ekr.Core.csproj" />
+		<ProjectReference Include="..\Ekr.Dependency\Ekr.Dependency.csproj" />
+		<ProjectReference Include="..\Ekr.Repository.Contracts\Ekr.Repository.Contracts.csproj" />
+		<ProjectReference Include="..\Ekr.Repository\Ekr.Repository.csproj" />
+
+		<!-- Referensi ke Gateway tetap ada agar DLL ikut build -->
+		<ProjectReference Include="..\Ekr.Gateway\Ekr.Gateway.csproj">
+			<Private>true</Private>
+			<CopyLocal>true</CopyLocal>
+		</ProjectReference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Update="appsettings.Development.json">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="appsettings.json">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<!-- 
+    FINAL FIX:
+    Cegah file appsettings dari Ekr.Gateway ikut di-publish,
+    tanpa mengganggu proses debug lokal.
+  -->
+	<Target Name="RemoveGatewayAppSettingsOnPublish" BeforeTargets="CopyFilesToPublishDirectory" Condition="'$(PublishDir)' != ''">
+		<ItemGroup>
+			<ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.RelativePath)' == 'appsettings.json'&#xD;&#xA;                OR '%(ResolvedFileToPublish.RelativePath)' == 'appsettings.Development.json'" />
+		</ItemGroup>
+	</Target>
+	
+
+</Project>
