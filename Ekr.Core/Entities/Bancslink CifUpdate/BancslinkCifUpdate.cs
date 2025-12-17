@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace  Ekr.Core.Entities
 {
-    public class BanchlinkCifNikUpdateRequest
+    public class BancslinkCifNikUpdateRequest
     {
         public string IsAuthorized { get; set; }
         [Required]
@@ -20,7 +20,7 @@ namespace  Ekr.Core.Entities
         [Required]
         public string TellerID { get; set; }
     }
-    public class BanchlinkCifNikUpdateResult
+    public class BancslinkCifNikUpdateResult
     {
         public bool Success { get; set; }
         public string Message { get; set; }

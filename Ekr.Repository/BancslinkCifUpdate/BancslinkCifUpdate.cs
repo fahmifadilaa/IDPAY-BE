@@ -5,7 +5,7 @@ using Ekr.Dapper.Connection.Base;
 using Ekr.Dapper.Connection.Contracts.Base;
 using Ekr.Dapper.Connection.Contracts.Sql;
 using Ekr.Dapper.Connection.Sql;
-using Ekr.Repository.Contracts.BanchlinkCifUpdate;
+using Ekr.Repository.Contracts.BancslinkCifUpdate;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -25,16 +25,16 @@ using ServiceStack;
 using System.Collections;
 using System.Xml.Linq;
 
-namespace Ekr.Repository.BanchlinkCifUpdate
+namespace Ekr.Repository.BancslinkCifUpdate
 {
-    public class BanchlinkCifUpdateRepository : BaseRepository,IBanchlinkCifUpdateRepository
+    public class BancslinkCifUpdateRepository : BaseRepository,IBancslinkCifUpdateRepository
     {
 
         private readonly IBaseConnection _baseConnection;
-        private readonly ILogger<BanchlinkCifUpdateRepository> _logger;
+        private readonly ILogger<BancslinkCifUpdateRepository> _logger;
 
-        public BanchlinkCifUpdateRepository(IEKtpReaderBackendDb con,
-            Microsoft.Extensions.Options.IOptions<ConnectionStringConfig> options, Microsoft.Extensions.Options.IOptions<ErrorMessageConfig> options2, ILogger<BanchlinkCifUpdateRepository> logger
+        public BancslinkCifUpdateRepository(IEKtpReaderBackendDb con,
+            Microsoft.Extensions.Options.IOptions<ConnectionStringConfig> options, Microsoft.Extensions.Options.IOptions<ErrorMessageConfig> options2, ILogger<BancslinkCifUpdateRepository> logger
             ) : base(con)
         {
             _baseConnection = new SqlServerConnection(options.Value.dbConnection1, options2);
@@ -42,9 +42,9 @@ namespace Ekr.Repository.BanchlinkCifUpdate
 
         }
 
-        public Task<BanchlinkCifNikUpdateResult> ExecuteBanchlinkCifNikUpdateAsync(BanchlinkCifNikUpdateRequest request)
+        public Task<BancslinkCifNikUpdateResult> ExecuteBancslinkCifNikUpdateAsync(BancslinkCifNikUpdateRequest request)
         {
-            const string proc = "[sp_BanchlinkCifUpdate]";
+            const string proc = "[sp_BancslinkCifUpdate]";
 
             return Db.WithConnectionAsync(async c =>
             {
@@ -56,13 +56,13 @@ namespace Ekr.Repository.BanchlinkCifUpdate
                 parameters.Add("@NIK", request.NIK);
                 parameters.Add("@ResultMessage", dbType: DbType.String, size: 255, direction: ParameterDirection.Output);
 
-                var result = await c.QueryFirstOrDefaultAsync<BanchlinkCifNikUpdateResult>(
+                var result = await c.QueryFirstOrDefaultAsync<BancslinkCifNikUpdateResult>(
                     proc,
                     parameters,
                     commandType: CommandType.StoredProcedure,
                     commandTimeout: 6000
                 );
-                result ??= new BanchlinkCifNikUpdateResult();
+                result ??= new BancslinkCifNikUpdateResult();
 
                 result.Message = parameters.Get<string>("@ResultMessage");
                 result.Success = true; 
@@ -71,12 +71,12 @@ namespace Ekr.Repository.BanchlinkCifUpdate
             });
         }
 
-        //public async Task<BanchlinkCifNikUpdateResult> ExecuteBanchlinkCifNikUpdateAsync(BanchlinkCifNikUpdateRequest request)
+        //public async Task<BancslinkCifNikUpdateResult> ExecuteBancslinkCifNikUpdateAsync(BancslinkCifNikUpdateRequest request)
         //{
         //    try
         //    {
         //        await using var conn = new SqlConnection(_connectionString);
-        //        await using var cmd = new SqlCommand("sp_BanchlinkCifUpdate", conn)
+        //        await using var cmd = new SqlCommand("sp_BancslinkCifUpdate", conn)
         //        {
         //            CommandType = CommandType.StoredProcedure
         //        };
@@ -100,7 +100,7 @@ namespace Ekr.Repository.BanchlinkCifUpdate
 
         //        var message = outParam.Value?.ToString() ?? "Process Success";
 
-        //        return new BanchlinkCifNikUpdateResult
+        //        return new BancslinkCifNikUpdateResult
         //        {
         //            Success = true,
         //            Message = message
@@ -109,7 +109,7 @@ namespace Ekr.Repository.BanchlinkCifUpdate
         //    catch (Exception ex)
         //    {
         //        // boleh log ke logger atau rethrow sesuai kebijakan
-        //        return new BanchlinkCifNikUpdateResult
+        //        return new BancslinkCifNikUpdateResult
         //        {
         //            Success = false,
         //            Message = ex.Message,

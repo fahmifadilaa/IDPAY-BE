@@ -1,4 +1,4 @@
-﻿using Ekr.Business.Contracts.BanchlinkCifUpdate;
+﻿using Ekr.Business.Contracts.BancslinkCifUpdate;
 using Ekr.Core.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -6,22 +6,22 @@ using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ekr.Api.BanchlinkCifUpdate.Controllers
+namespace Ekr.Api.BancslinkCifUpdate.Controllers
 {
     [ApiController]
-    [Route("banchlink")]   
-    public class BanchlinkCifUpdateController : ControllerBase
+    [Route("bancslink")]   
+    public class BancslinkCifUpdateController : ControllerBase
     {
-        private readonly IBanchlinkCifUpdateService _service;
-        private readonly ILogger<BanchlinkCifUpdateController> _logger;
+        private readonly IBancslinkCifUpdateService _service;
+        private readonly ILogger<BancslinkCifUpdateController> _logger;
         private readonly string _expectedApiKey;
         private readonly string _InvalidApiKeyMessage;
         private readonly string _SpvNullMessage;
         private readonly string _level;
 
-        public BanchlinkCifUpdateController(
-            IBanchlinkCifUpdateService service,
-            ILogger<BanchlinkCifUpdateController> logger,
+        public BancslinkCifUpdateController(
+            IBancslinkCifUpdateService service,
+            ILogger<BancslinkCifUpdateController> logger,
             IConfiguration configuration)
         {
             _service = service;
@@ -33,8 +33,8 @@ namespace Ekr.Api.BanchlinkCifUpdate.Controllers
         }
 
         [HttpPost("update-cif-nik")]  
-        public async Task<IActionResult> BanchlinkCifNikUpdate(
-            [FromBody] BanchlinkCifNikUpdateRequest request)
+        public async Task<IActionResult> BancslinkCifNikUpdate(
+            [FromBody] BancslinkCifNikUpdateRequest request)
         {
             //if (request == null)
             //    return BadRequest(new { success = false, message = "Invalid request payload" });
@@ -56,7 +56,7 @@ namespace Ekr.Api.BanchlinkCifUpdate.Controllers
             if (string.IsNullOrWhiteSpace(request.SpvID) || string.IsNullOrWhiteSpace(request.IsAuthorized) || request.IsAuthorized != "Y" )
                 return StatusCode(400, new { success = false, message = _SpvNullMessage + _level, errorCode = 400});
 
-            var result = await _service.BanchlinkCifNikUpdateAsync(request);
+            var result = await _service.BancslinkCifNikUpdateAsync(request);
             if (!result.Success)
                 return StatusCode(500, result);
 

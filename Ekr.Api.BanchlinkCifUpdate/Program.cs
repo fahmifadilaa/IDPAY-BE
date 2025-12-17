@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ekr.Api.BanchlinkCifUpdate
+namespace Ekr.Api.BancslinkCifUpdate
 {
     public class Program
     {

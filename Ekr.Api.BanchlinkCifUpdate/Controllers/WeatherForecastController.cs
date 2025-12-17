@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ekr.Api.BanchlinkCifUpdate.Controllers
+namespace Ekr.Api.BancslinkCifUpdate.Controllers
 {
     [ApiController]
     [Route("[controller]")]

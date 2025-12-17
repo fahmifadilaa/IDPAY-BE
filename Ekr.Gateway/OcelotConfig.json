@@ -1,7 +1,7 @@
 {
   "Routes": [
     {
-      "DownstreamPathTemplate": "/BanchlinkCifUpdate/banchlink/update-cif-nik",
+      "DownstreamPathTemplate": "/BancslinkCifUpdate/banchlink/update-cif-nik",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -9,7 +9,7 @@
           "Port": 80
         }
       ],
-      "UpstreamPathTemplate": "/banchlink/update-cif-nik",
+      "UpstreamPathTemplate": "/bancslink/update-cif-nik",
       "UpstreamHttpMethod": [ "Post" ]
     },
     {

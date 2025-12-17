@@ -1,10 +1,10 @@
-using Ekr.Business.BanchlinkCifUpdate;
-using Ekr.Business.Contracts.BanchlinkCifUpdate;
+using Ekr.Business.BancslinkCifUpdate;
+using Ekr.Business.Contracts.BancslinkCifUpdate;
 using Ekr.Dapper.Connection.Contracts.Sql;
 using Ekr.Dapper.Connection.Sql;
 using Ekr.Dapper.Connection;
-using Ekr.Repository.BanchlinkCifUpdate;
-using Ekr.Repository.Contracts.BanchlinkCifUpdate;
+using Ekr.Repository.BancslinkCifUpdate;
+using Ekr.Repository.Contracts.BancslinkCifUpdate;
 using Ekr.Dapper.Connection.Base;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -15,7 +15,7 @@ using Microsoft.OpenApi.Models;
 using Ekr.Core.Configuration;
 using System.IO;
 
-namespace Ekr.Api.BanchlinkCifUpdate
+namespace Ekr.Api.BancslinkCifUpdate
 {
     public class Startup
     {
@@ -47,7 +47,7 @@ namespace Ekr.Api.BanchlinkCifUpdate
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "Ekr.Api.BanchlinkCifUpdate",
+                    Title = "Ekr.Api.BancslinkCifUpdate",
                     Version = "v1"
                 });
             });
@@ -56,8 +56,8 @@ namespace Ekr.Api.BanchlinkCifUpdate
             services.Configure<ErrorMessageConfig>(Configuration.GetSection("ErrorMessageConfig"));
 
             services.AddScoped<IEKtpReaderBackendDb, EKtpReaderBackendDb>();
-            services.AddScoped<IBanchlinkCifUpdateRepository, BanchlinkCifUpdateRepository>();
-            services.AddScoped<IBanchlinkCifUpdateService, BanchlinkCifUpdateService>();
+            services.AddScoped<IBancslinkCifUpdateRepository, BancslinkCifUpdateRepository>();
+            services.AddScoped<IBancslinkCifUpdateService, BancslinkCifUpdateService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -66,12 +66,12 @@ namespace Ekr.Api.BanchlinkCifUpdate
             app.UseSwagger();
             //app.UseSwaggerUI(c =>
             //{
-            //    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ekr.Api.BanchlinkCifUpdate v1");
+            //    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ekr.Api.BancslinkCifUpdate v1");
             //    c.RoutePrefix = "swagger"; // akses: /swagger/index.html
             //});
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("v1/swagger.json", "Ekr.Api.BanchlinkCifUpdate v1");
+                c.SwaggerEndpoint("v1/swagger.json", "Ekr.Api.BancslinkCifUpdate v1");
                 c.RoutePrefix = "swagger";
             });
 
