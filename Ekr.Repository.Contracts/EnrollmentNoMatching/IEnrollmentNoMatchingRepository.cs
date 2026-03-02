@@ -16,7 +16,9 @@ namespace Ekr.Repository.Contracts.EnrollmentNoMatching
 {
     public interface IEnrollmentNoMatchingRepository
     {
-
+        Task<EnrollKTPVM> DetailData(string nik);
+        Task<KtpPhotoBase64VM> GetPhotoBase64ByNIK(string nik);
+        Task<bool> SaveDataKTP(SaveKTPRequest req);
         Task<GridResponse<EnrollNoMatchingData>> GetPengajuanNoMatchingList(EnrollNoMatchingFilter filter, int currentUserId);
         Task<GridResponse<TblEnrollNoMatchingLogVM>> GetEnrollNoMatchingLogAsync(int id);
         Task<bool> GetEnrollwithourFRAsync(string nik);

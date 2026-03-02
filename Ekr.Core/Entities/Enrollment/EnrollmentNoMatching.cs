@@ -375,6 +375,70 @@ namespace Ekr.Core.Entities.Enrollment
 
         public string StatusName { get; set; }
     }
+
+
+    public class MatchByNikReq
+    {
+        public string NIK { get; set; }
+        public string Base64Selfie { get; set; } // from webcam or phone
+        [Required]
+        public string trx_id { get; set; }
+        public string channel { get; set; }
+    }
+
+    public class KtpPhotoBase64VM
+    {
+        public string NIK { get; set; }
+        public string Base64Photo { get; set; }
+        public string FileName { get; set; }
+    }
+
+    public class KtpPhotoDbModel
+    {
+        public long Id { get; set; }
+        public string NIK { get; set; }
+        public string PathFile { get; set; }
+        public string FileName { get; set; }
+    }
+
+
+
+    public class SaveKTPRequest
+    {
+        public string NIK { get; set; }
+        public string CIF { get; set; }
+        public string Nama { get; set; }
+
+        public string TempatLahir { get; set; }
+        public string TanggalLahir { get; set; }
+        public string GolonganDarah { get; set; }
+        public string JenisKelamin { get; set; }
+        public string Alamat { get; set; }
+        public string RT { get; set; }
+        public string RW { get; set; }
+        public string Kelurahan { get; set; }
+        public string Kecamatan { get; set; }
+        public string Kota { get; set; }
+        public string Provinsi { get; set; }
+        public string Agama { get; set; }
+        public string StatusPerkawinan { get; set; }
+        public string Pekerjaan { get; set; }
+        public string Kewarganegaraan { get; set; }
+        public string MasaBerlaku { get; set; }
+
+        // Images
+        public string FingerprintLeft { get; set; }
+        public string FingerprintRight { get; set; }
+        public string Signature { get; set; }
+        public string PhotoKTP { get; set; }
+        public string PhotoCam { get; set; }
+
+        public int CreatedById { get; set; }
+        public string CreatedByNpp { get; set; }
+    }
+
+
+
 }
 
 

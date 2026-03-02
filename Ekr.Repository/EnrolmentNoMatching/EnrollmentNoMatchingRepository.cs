@@ -50,6 +50,259 @@ namespace Ekr.Repository.EnrolmentNoMatching
             _baseConnectionLog = new SqlServerConnection(options.Value.dbConnection1, options2);
             _sysParameterRepository = sysParameterRepository;
         }
+        public async Task<EnrollKTPVM> DetailData(string nik)
+        {
+            const string sp = "[ProcViewDataGetDataByNIK_TencentVer]";
+
+            var data = await Db.WithConnectionAsync(db => db.QueryFirstOrDefaultAsync<EnrollKTPVM>(sp, new
+            {
+                NIK = nik
+            }, commandType: CommandType.StoredProcedure));
+
+            return data;
+        }
+
+        public async Task<KtpPhotoBase64VM> GetPhotoBase64ByNIK(string nik)
+        {
+            const string proc = "[ProcAPIGetDataPhotoByNIK]";
+
+            var param = new
+            {
+                NIK = new DbString { Value = nik, Length = 50 }
+            };
+
+            var data = await Db.WithConnectionAsync(c =>
+                c.QueryFirstOrDefaultAsync<dynamic>(proc, param, commandType: CommandType.StoredProcedure)
+            ).ConfigureAwait(false);
+
+            if (data == null)
+                return null;
+
+            string base64String = null;
+
+            try
+            {
+                if (File.Exists(data.PathFile))
+                {
+                    byte[] fileBytes = File.ReadAllBytes(data.PathFile);
+                    base64String = Convert.ToBase64String(fileBytes);
+                }
+            }
+            catch
+            {
+                base64String = null;
+            }
+
+            return new KtpPhotoBase64VM
+            {
+                NIK = data.NIK,
+                FileName = data.FileName,
+                Base64Photo = base64String
+            };
+        }
+
+
+        public async Task<bool> SaveDataKTP(SaveKTPRequest req)
+        {
+            return await Db.WithConnectionAsync(async conn =>
+            {
+                using var tran = conn.BeginTransaction();
+                try
+                {
+                    // -------------------------------------------------------
+                    // CHECK EXISTING NIK
+                    // -------------------------------------------------------
+                    var exists = await conn.ExecuteScalarAsync<int>(
+                   "SELECT COUNT(1) FROM Tbl_DataKTP_Demografis WHERE NIK = @NIK",
+                   new { req.NIK }, tran);
+
+                    if (exists == 0)
+                    {
+                        var sqlDemoInsert = @"
+                INSERT INTO Tbl_DataKTP_Demografis
+                (NIK, CIF, Nama, TempatLahir, TanggalLahir, GolonganDarah, JenisKelamin,
+                 Alamat, RT, RW, Kelurahan, Kecamatan, Kota, Provinsi, Agama,
+                 StatusPerkawinan, Pekerjaan, Kewarganegaraan, MasaBerlaku,
+                 CreatedById, CreatedByNpp, CreatedTime)
+                VALUES
+                (@NIK, @CIF, @Nama, @TempatLahir, @TanggalLahir, @GolonganDarah, @JenisKelamin,
+                 @Alamat, @RT, @RW, @Kelurahan, @Kecamatan, @Kota, @Provinsi, @Agama,
+                 @StatusPerkawinan, @Pekerjaan, @Kewarganegaraan, @MasaBerlaku,
+                 @CreatedById, @CreatedByNpp, GETDATE())";
+
+                        await conn.ExecuteAsync(sqlDemoInsert, req, tran);
+                    }
+                    else
+                    {
+                        var sqlDemoUpdate = @"
+                UPDATE Tbl_DataKTP_Demografis SET
+                    CIF = @CIF,
+                    Nama = @Nama,
+                    TempatLahir = @TempatLahir,
+                    TanggalLahir = @TanggalLahir,
+                    GolonganDarah = @GolonganDarah,
+                    JenisKelamin = @JenisKelamin,
+                    Alamat = @Alamat,
+                    RT = @RT,
+                    RW = @RW,
+                    Kelurahan = @Kelurahan,
+                    Kecamatan = @Kecamatan,
+                    Kota = @Kota,
+                    Provinsi = @Provinsi,
+                    Agama = @Agama,
+                    StatusPerkawinan = @StatusPerkawinan,
+                    Pekerjaan = @Pekerjaan,
+                    Kewarganegaraan = @Kewarganegaraan,
+                    MasaBerlaku = @MasaBerlaku,
+                    UpdatedById = @CreatedById,
+                    UpdatedByNpp = @CreatedByNpp,
+                    UpdatedTime = GETDATE()
+                WHERE NIK = @NIK";
+
+                        await conn.ExecuteAsync(sqlDemoUpdate, req, tran);
+                    }
+
+                    // -------------------------------------------------------
+                    // SAVE FINGERPRINT FILE
+                    // -------------------------------------------------------
+                    string fingerBase = "D://FileKTP2/Finger";
+                    string fingerFolder = (Path.Combine(fingerBase, req.NIK)).Replace("\\", "/");
+                    Directory.CreateDirectory(fingerFolder);
+
+                    string fileFinger = $"Finger_{req.NIK}_{DateTime.Now:yyyyMMddHHmmss}.jpg";
+                    string pathFinger = (Path.Combine(fingerFolder, fileFinger)).Replace("\\", "/");
+
+                    if (!string.IsNullOrEmpty(req.FingerprintRight))
+                    {
+                        byte[] fp = Convert.FromBase64String(req.FingerprintRight);
+                        await File.WriteAllBytesAsync(pathFinger, fp);
+                    }
+
+                    var sqlFinger = @"
+            INSERT INTO Tbl_DataKTP_Finger
+            (NIK, TypeFinger, PathFile, FileName, CreatedById, CreatedByNpp, CreatedTime)
+            VALUES
+            (@NIK, @TypeFinger, @PathFile, @FileName, @CreatedById, @CreatedByNpp, GETDATE())";
+
+                    await conn.ExecuteAsync(sqlFinger, new
+                    {
+                        req.NIK,
+                        TypeFinger = "Jari Telunjuk Kanan",
+                        PathFile = pathFinger,
+                        FileName = fileFinger,
+                        req.CreatedById,
+                        req.CreatedByNpp
+                    }, tran);
+
+                    // -------------------------------------------------------
+                    // SAVE SIGNATURE
+                    // -------------------------------------------------------
+                    string signBase = "D://FileKTP2/Signature";
+                    string signFolder = (Path.Combine(signBase, req.NIK)).Replace("\\", "/");
+                    Directory.CreateDirectory(signFolder);
+
+                    string fileSign = $"Signature_{req.NIK}_{DateTime.Now:yyyyMMddHHmmss}.jpg";
+                    string pathSign = (Path.Combine(signFolder, fileSign)).Replace("\\", "/");
+
+                    if (!string.IsNullOrEmpty(req.Signature))
+                    {
+                        byte[] sign = Convert.FromBase64String(req.Signature);
+                        await File.WriteAllBytesAsync(pathSign, sign);
+                    }
+
+                    var sqlSign = @"
+            INSERT INTO Tbl_DataKTP_Signature
+            (NIK, PathFile, FileName, CreatedById, CreatedByNpp, CreatedTime)
+            VALUES
+            (@NIK, @PathFile, @FileName, @CreatedById, @CreatedByNpp, GETDATE())";
+
+                    await conn.ExecuteAsync(sqlSign, new
+                    {
+                        req.NIK,
+                        PathFile = pathSign,
+                        FileName = fileSign,
+                        req.CreatedById,
+                        req.CreatedByNpp
+                    }, tran);
+
+                    // -------------------------------------------------------
+                    // SAVE PHOTO KTP
+                    // -------------------------------------------------------
+                    string photoBase = "D://FileKTP2/Photo";
+                    string photoFolder = (Path.Combine(photoBase, req.NIK)).Replace("\\", "/");
+                    Directory.CreateDirectory(photoFolder);
+
+                    string filePhoto = $"FotoKTP_{req.NIK}_{DateTime.Now:yyyyMMddHHmmss}.jpg";
+                    string pathPhoto = (Path.Combine(photoFolder, filePhoto)).Replace("\\", "/");
+
+                    if (!string.IsNullOrEmpty(req.PhotoKTP))
+                    {
+                        byte[] b = Convert.FromBase64String(req.PhotoKTP);
+                        await File.WriteAllBytesAsync(pathPhoto, b);
+                    }
+
+                    var sqlPhoto = @"
+            INSERT INTO Tbl_DataKTP_Photo
+            (NIK, PathFile, FileName, CreatedById, CreatedByNpp, CreatedTime)
+            VALUES
+            (@NIK, @PathFile, @FileName, @CreatedById, @CreatedByNpp, GETDATE())";
+
+                    await conn.ExecuteAsync(sqlPhoto, new
+                    {
+                        req.NIK,
+                        PathFile = pathPhoto,
+                        FileName = filePhoto,
+                        req.CreatedById,
+                        req.CreatedByNpp
+                    }, tran);
+
+                    // -------------------------------------------------------
+                    // SAVE PHOTO CAM
+                    // -------------------------------------------------------
+                    string camBase = "D://FileKTP2/Webcam";
+                    string camFolder = (Path.Combine(camBase, req.NIK)).Replace("\\", "/");
+                    Directory.CreateDirectory(camFolder);
+
+                    string fileCam = $"PhotoCam_{req.NIK}_{DateTime.Now:yyyyMMddHHmmss}.jpg";
+                    string pathCam = (Path.Combine(camFolder, fileCam)).Replace("\\", "/");
+
+                    if (!string.IsNullOrEmpty(req.PhotoCam))
+                    {
+                        byte[] camBytes = Convert.FromBase64String(req.PhotoCam);
+                        await File.WriteAllBytesAsync(pathCam, camBytes);
+                    }
+
+                    var sqlCam = @"
+            INSERT INTO Tbl_DataKTP_PhotoCam
+            (NIK, PathFile, FileName, CreatedById, CreatedByNpp, CreatedTime)
+            VALUES
+            (@NIK, @PathFile, @FileName, @CreatedById, @CreatedByNpp, GETDATE())";
+
+                    await conn.ExecuteAsync(sqlCam, new
+                    {
+                        req.NIK,
+                        PathFile = pathCam,
+                        FileName = fileCam,
+                        req.CreatedById,
+                        req.CreatedByNpp
+                    }, tran);
+
+                    // -------------------------------------------------------
+                    tran.Commit();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    tran.Rollback();
+                    Console.WriteLine("ERROR SAVE KTP: " + ex);
+                    return false;
+                }
+            });
+        }
+
+
+
+
 
         #region INSERT
         public void InsertEnrollFlow(Tbl_DataKTP_Demografis demografis, Tbl_DataKTP_Demografis_Log demografis_Log,

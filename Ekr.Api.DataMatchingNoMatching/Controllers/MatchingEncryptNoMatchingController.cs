@@ -22,15 +22,19 @@ using Ekr.Repository.Contracts.EnrollmentNoMatching;
 using Ekr.Repository.DataMaster.Utility;
 using Ekr.Services.Contracts.Account;
 using Ekr.Services.Contracts.Recognition;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NPOI.HSSF.Record.CF;
 using NPOI.POIFS.Crypt.Dsig;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -48,6 +52,7 @@ namespace Ekr.Api.DataMatchingNoMatching.Controllers
         private readonly IProfileService _profileService;
         private readonly IProfileRepository _profileRepo;
         private readonly IImageRecognitionService _imageRecognitionService;
+        private readonly ILogger<MatchingEncryptNoMatchingController> _logger;
 
         private readonly string HostSoa = "";
         private readonly string systemId = "";
@@ -70,7 +75,7 @@ namespace Ekr.Api.DataMatchingNoMatching.Controllers
         public MatchingEncryptNoMatchingController(IEnrollmentNoMatchingService enrollmentService,
             IEnrollmentNoMatchingRepository enrollmentKTPRepository,
             ICIFService cifService,
-            IConfiguration configuration, IUtilityRepository utilityRepository, IProfileService profileService, IProfileRepository profileRepo, IImageRecognitionService imageRecognitionService)
+            IConfiguration configuration, IUtilityRepository utilityRepository, IProfileService profileService, IProfileRepository profileRepo, IImageRecognitionService imageRecognitionService, ILogger<MatchingEncryptNoMatchingController> logger)
         {
             _enrollmentService = enrollmentService;
             _enrollmentKTPRepository = enrollmentKTPRepository;
@@ -80,6 +85,7 @@ namespace Ekr.Api.DataMatchingNoMatching.Controllers
             _profileService = profileService;
             _profileRepo = profileRepo;
             _imageRecognitionService = imageRecognitionService;
+            _logger = logger;
 
             HostSoa = _configuration.GetValue<string>("SOAApi:Host");
             systemId = _configuration.GetValue<string>("SOAApi:systemId");
@@ -99,6 +105,93 @@ namespace Ekr.Api.DataMatchingNoMatching.Controllers
 
 
             ResponseDataNotFound = _configuration.GetValue<string>("Response:DataNotFound");
+            _logger = logger;
+        }
+
+        [HttpPost]
+        [Route("match-face-by-nik")]
+        public async Task<IActionResult> MatchFaceByNik([FromBody] MatchByNikReq req)
+        {
+            _logger.LogWarning($"BACKEND RECEIVED: NIK={req?.NIK}, SelfieLength={req?.Base64Selfie?.Length}");
+
+            // STEP 1 — get photo from DB & convert to Base64
+            var photo = await _enrollmentKTPRepository.GetPhotoBase64ByNIK(req.NIK);
+
+            if (photo == null || photo.Base64Photo == null)
+            {
+                return Ok(new
+                {
+                    success = false,
+                    message = "Photo not found"
+                });
+            }
+
+            // STEP 2 — send Base64 to Face API
+            var client = new HttpClient();
+            var apiUrl = "https://demo-faceapi.idpay.co.id/facecompare/compare";
+
+            var body = new
+            {
+                ImageA = photo.Base64Photo,        // RAW base64 only
+                ImageB = req.Base64Selfie          // RAW base64 only
+            };
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(body);
+            var httpContent = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var response = await client.PostAsync(apiUrl, httpContent);
+            var result = await response.Content.ReadAsStringAsync();
+
+            dynamic compareResult = JsonConvert.DeserializeObject(result);
+
+            // Access data.Score
+            int score = compareResult?.data?.Score ?? 0;
+
+            // Set your threshold
+            bool isMatch = score >= 80;
+
+            if (!isMatch)
+            {
+                return Ok(new
+                {
+                    success = false,
+                    message = "Face mismatch",
+                    score = score
+                });
+            }
+
+            // STEP 3 — if match, get full biodata via stored procedure
+            var fullData = await _enrollmentKTPRepository.DetailData(req.NIK);
+
+            if (fullData == null)
+            {
+                return Ok(new
+                {
+                    success = true,
+                    isMatch = true,
+                    message = "Match, but biodata not found"
+                });
+            }
+
+            return Ok(new
+            {
+                success = true,
+                isMatch = true,
+                message = "Face Match Success",
+                biodata = fullData,
+                score = score
+            });
+        }
+
+
+        [HttpPost("SaveDataKTP")]
+        public async Task<IActionResult> SaveDataKTP([FromBody] SaveKTPRequest req)
+        {
+            var response = await _enrollmentKTPRepository.SaveDataKTP(req);
+
+            if (response)
+                return Ok(new { isSuccess = true });
+
+            return BadRequest(new { isSuccess = false, message = "Failed saving data" });
         }
 
         [HttpPost("matching-face-api")]

@@ -4339,8 +4339,9 @@ namespace Ekr.Business.DataKTP
                 else
                 {
                     using var r = new StreamReader(new MemoryStream(ktp_FingerKananB));
-                    var enc = r.ReadToEnd();
-                    profile.ktp_FingerKanan = enc.Decrypt(Phrase.FileEncryption);
+                    profile.ktp_FingerKanan = Convert.ToBase64String(ktp_FingerKananB);
+                    //var enc = r.ReadToEnd();
+                    //profile.ktp_FingerKanan = enc.Decrypt(Phrase.FileEncryption);
                 }
             }
             catch (Exception)
@@ -4360,8 +4361,9 @@ namespace Ekr.Business.DataKTP
                 else
                 {
                     using var r = new StreamReader(new MemoryStream(ktp_FingerKiriB));
-                    var enc = r.ReadToEnd();
-                    profile.ktp_FingerKiri = enc.Decrypt(Phrase.FileEncryption);
+                    profile.ktp_FingerKanan = Convert.ToBase64String(ktp_FingerKiriB);
+                    //var enc = r.ReadToEnd();
+                    //profile.ktp_FingerKiri = enc.Decrypt(Phrase.FileEncryption);
                 }
             }
             catch (Exception)
