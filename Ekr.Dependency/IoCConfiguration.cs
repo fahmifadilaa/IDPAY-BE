@@ -2,6 +2,8 @@
 using Ekr.Auth.Contracts;
 using Ekr.Business.Contracts.DataKTP;
 using Ekr.Business.DataKTP;
+using Ekr.Business.BancslinkCifUpdate;
+using Ekr.Business.Contracts.BancslinkCifUpdate;
 using Ekr.Core.Configuration;
 using Ekr.Core.Helper;
 using Ekr.Core.Services;
@@ -89,6 +91,10 @@ using Ekr.Repository.Contracts.DataMaster.MasterTreshold;
 using Ekr.Repository.DataMaster.MasterTreshold;
 using Ekr.Repository.Contracts.MessageCode;
 using Ekr.Repository.MessageCode;
+using Ekr.Repository.Contracts.BancslinkCifUpdate;
+using Ekr.Repository.BancslinkCifUpdate;
+
+
 
 namespace Ekr.Dependency
 {
@@ -152,6 +158,7 @@ namespace Ekr.Dependency
             _container.AddSingleton<ISettingThresholdRepository, SettingThresholdRepository>();
             _container.AddSingleton<IEnrollmentNoMatchingRepository, EnrollmentNoMatchingRepository>();
             _container.AddSingleton<IMessageCodeRepository, MessageCodeRepository>();
+            _container.AddSingleton<IBancslinkCifUpdateRepository, BancslinkCifUpdateRepository>();
         }
 
         public void RegisterBusiness()
@@ -168,6 +175,7 @@ namespace Ekr.Dependency
             _container.AddSingleton<ISettingThresholdService, SettingThresholService>();
             _container.AddSingleton<IMappingNIKPegawaiService, MappingNIKPegawaiService>();
             _container.AddSingleton<IEnrollmentNoMatchingService, EnrollmentNoMatchingService>();
+            _container.AddSingleton<IBancslinkCifUpdateService, BancslinkCifUpdateService>();
         }
 
         public void RegisterService()

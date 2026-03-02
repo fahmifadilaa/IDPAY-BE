@@ -93,7 +93,7 @@ namespace Ekr.Repository.DataMaster.Unit
         {
             const string query = "select [Id], [Parent_Id] as ParentId, [Type], [KodeWilayah], " +
                 "[Code],[FullCode],[ShortName],[Name],[Address],[Email],[Telepon],[StatusOutlet],[Latitude]," +
-                "[Longitude],[IsActive],[CreatedTime],[UpdatedTime],[CreatedBy_Id] as CreatedById,[UpdatedBy_Id] as UpdatedById,[DeletedTime],[DeletedBy_Id] as DeletedById" +
+                "[Longitude],[IsActive],[CreatedTime],[UpdatedTime],[CreatedBy_Id] as CretedById,[UpdatedBy_Id] as UpdatedById,[DeletedTime],[DeletedBy_Id] as DeletedById" +
                 ",[IsDelete] from[dbo].[Tbl_Unit] where Id = @Id";
 
             return Db.WithConnectionAsync(db => db.QueryFirstOrDefaultAsync<TblUnitVM>(query, new { Id }));
@@ -118,13 +118,15 @@ namespace Ekr.Repository.DataMaster.Unit
                 "[Type]," +
                 "[Code]," +
                 "[FullCode]," +
+                "[KodeWilayah]," +
                 "[ShortName]," +
                 "[Name]," +
                 "[Address]," +
                 "[Email]," +
                 "[Telepon]," +
                 "[Latitude]," +
-                "[Longitude]," +
+                "[Longitude],"+
+                "[StatusOutlet]," +
                 "[IsActive]," +
                 "[CreatedTime]," +
                 "[CreatedBy_Id])" +
@@ -133,6 +135,7 @@ namespace Ekr.Repository.DataMaster.Unit
                 "@Type," +
                 "@Code," +
                 "@FullCode," +
+                "@KodeWilayah," +
                 "@ShortName," +
                 "@Name," +
                 "@Address," +
@@ -140,6 +143,7 @@ namespace Ekr.Repository.DataMaster.Unit
                 "@Telepon," +
                 "@Latitude," +
                 "@Longitude," +
+                "@StatusOutlet," +
                 "@IsActive," +
                 "@CreatedTime," +
                 "@CreatedById)";
@@ -149,7 +153,8 @@ namespace Ekr.Repository.DataMaster.Unit
                 req.ParentId,
                 req.Type,
                 req.Code,
-                req.FullCode,
+                req.FullCode,   
+                req.KodeWilayah,
                 req.ShortName,
                 req.Name,
                 req.Address,
@@ -157,6 +162,7 @@ namespace Ekr.Repository.DataMaster.Unit
                 req.Telepon,
                 req.Latitude,
                 req.Longitude,
+                req.StatusOutlet,
                 req.IsActive,
                 req.CreatedTime,
                 req.CreatedById
@@ -174,6 +180,7 @@ namespace Ekr.Repository.DataMaster.Unit
                         "Type = @Type, " +
                         "Code = @Code, " +
                         "FullCode = @FullCode, " +
+                        "KodeWilayah = @KodeWilayah, " +
                         "ShortName = @ShortName, " +
                         "Name = @Name, " +
                         "Address = @Address, " +
@@ -181,6 +188,7 @@ namespace Ekr.Repository.DataMaster.Unit
                         "Telepon = @Telepon, " +
                         "Latitude = @Latitude, " +
                         "Longitude = @Longitude, " +
+                        "StatusOutlet = @StatusOutlet, " +
                         "IsActive = @IsActive, " +
                         "UpdatedTime = @UpdatedTime, " +
                         "UpdatedBy_Id = @UpdatedById " +
@@ -192,6 +200,7 @@ namespace Ekr.Repository.DataMaster.Unit
                 req.Type,
                 req.Code,
                 req.FullCode,
+                req.KodeWilayah,
                 req.ShortName,
                 req.Name,
                 req.Address,
@@ -199,6 +208,7 @@ namespace Ekr.Repository.DataMaster.Unit
                 req.Telepon,
                 req.Latitude,
                 req.Longitude,
+                req.StatusOutlet,
                 req.IsActive,
                 req.UpdatedTime,
                 req.UpdatedById,
