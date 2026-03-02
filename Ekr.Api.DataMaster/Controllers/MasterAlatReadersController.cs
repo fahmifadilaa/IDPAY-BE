@@ -12,6 +12,9 @@ using Ekr.Repository.Contracts.DataMaster.Utility;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+
 
 namespace Ekr.Api.DataMaster.Controllers
 {
@@ -340,7 +343,12 @@ namespace Ekr.Api.DataMaster.Controllers
                     //_ = await _alatReaderRepository.UpdateAlatMasterReaderUserByID(checkUser.Id);
                 }
 
+                //_ = await _alatReaderRepository.CreateLogActivity(req);
+                // MASKING SEBELUM INSERT
+                req.ResultSocket = MaskSensitiveData(req.ResultSocket);
+
                 _ = await _alatReaderRepository.CreateLogActivity(req);
+
 
                 return new ServiceResponse<ReqCreateLogActivity>
                 {
@@ -348,6 +356,46 @@ namespace Ekr.Api.DataMaster.Controllers
                     Message = "Success",
                     Data = req
                 };
+            }
+        }
+
+        public static string MaskSensitiveData(string json)
+        {
+            if (string.IsNullOrEmpty(json))
+                return json;
+
+            var jObject = Newtonsoft.Json.Linq.JObject.Parse(json);
+
+            // Ambil node "data"
+            var dataToken = jObject["data"];
+
+            if (dataToken != null && dataToken.Type == Newtonsoft.Json.Linq.JTokenType.Object)
+            {
+                var dataObj = (Newtonsoft.Json.Linq.JObject)dataToken;
+
+                MaskField(dataObj, "ktp_NIK", 4);
+                MaskField(dataObj, "ktp_Nama", 4);
+                MaskField(dataObj, "ktp_Alamat", 8);
+                MaskField(dataObj, "ktp_TempatLahir", 3);
+                MaskField(dataObj, "ktp_TanggalLahir", 3);
+                MaskField(dataObj, "ktp_TTL", 3);
+                MaskField(dataObj, "image", 3);
+
+            }
+
+            return jObject.ToString(Newtonsoft.Json.Formatting.None);
+        }
+
+        private static void MaskField(Newtonsoft.Json.Linq.JObject obj, string key, int visibleLast)
+        {
+            if (obj[key] != null)
+            {
+                var value = obj[key].ToString();
+                if (value.Length > visibleLast)
+                {
+                    obj[key] = new string('*', value.Length - visibleLast) +
+                               value.Substring(value.Length - visibleLast);
+                }
             }
         }
 
