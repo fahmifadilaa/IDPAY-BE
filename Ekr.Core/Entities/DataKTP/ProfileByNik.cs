@@ -37,6 +37,8 @@ namespace Ekr.Core.Entities.DataKTP
         public string ktp_PhotoCam { get; set; }
         public string ktp_FingerKanan { get; set; }
         public string ktp_FingerKiri { get; set; }
+        public string ktp_FingerKananISO { get; set; }
+        public string ktp_FingerKiriISO { get; set; }
         public string ktp_Signature { get; set; }
         public string ktp_TypeJariKanan { get; set; }
         public string ktp_TypeJariKiri { get; set; }

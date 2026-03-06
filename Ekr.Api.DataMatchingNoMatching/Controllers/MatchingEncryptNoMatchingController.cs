@@ -182,6 +182,54 @@ namespace Ekr.Api.DataMatchingNoMatching.Controllers
             });
         }
 
+        [HttpPost]
+        [Route("get-data-by-nik")]
+        public async Task<IActionResult> getDataByNik([FromBody] MatchByNikReq req)
+        {
+
+            // STEP 3 — if match, get full biodata via stored procedure
+            var fullData = await _enrollmentKTPRepository.DetailData(req.NIK);
+
+            if (fullData == null)
+            {
+                return Ok(new
+                {
+                    success = true,
+                    isMatch = true,
+                    message = "Match, but biodata not found"
+                });
+            }
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    if (!string.IsNullOrEmpty(fullData.ktp_FingerKanan))
+                    {
+                        var base64 = await client.GetStringAsync(fullData.ktp_FingerKanan);
+                        fullData.ktp_FingerKanan = "data:image/png;base64," + base64;
+                    }
+
+                    if (!string.IsNullOrEmpty(fullData.ktp_FingerKiri))
+                    {
+                        var base64 = await client.GetStringAsync(fullData.ktp_FingerKiri);
+                        fullData.ktp_FingerKiri = "data:image/png;base64," + base64;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading fingerprint txt file");
+            }
+
+            return Ok(new
+            {
+                success = true,
+                message = "Get Data Success",
+                biodata = fullData,
+            });
+        }
+
 
         [HttpPost("SaveDataKTP")]
         public async Task<IActionResult> SaveDataKTP([FromBody] SaveKTPRequest req)

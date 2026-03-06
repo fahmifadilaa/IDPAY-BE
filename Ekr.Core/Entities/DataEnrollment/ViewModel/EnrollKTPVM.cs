@@ -8,6 +8,7 @@ namespace Ekr.Core.Entities.DataEnrollment.ViewModel
 {
     public class EnrollKTPVM
     {
+        public string ktp_CIF { get; set; }
         public string ktp_NIK { get; set; }
         public string ktp_Nama { get; set; }
         public string ktp_TTL { get; set; }

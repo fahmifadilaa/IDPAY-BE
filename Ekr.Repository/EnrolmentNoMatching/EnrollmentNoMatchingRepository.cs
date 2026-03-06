@@ -163,33 +163,92 @@ namespace Ekr.Repository.EnrolmentNoMatching
                     }
 
                     // -------------------------------------------------------
-                    // SAVE FINGERPRINT FILE
+                    // SAVE RIGHT FINGER
                     // -------------------------------------------------------
                     string fingerBase = "D://FileKTP2/Finger";
-                    string fingerFolder = (Path.Combine(fingerBase, req.NIK)).Replace("\\", "/");
+                    string fingerFolder = Path.Combine(fingerBase, req.NIK).Replace("\\", "/");
                     Directory.CreateDirectory(fingerFolder);
 
-                    string fileFinger = $"Finger_{req.NIK}_{DateTime.Now:yyyyMMddHHmmss}.jpg";
-                    string pathFinger = (Path.Combine(fingerFolder, fileFinger)).Replace("\\", "/");
+                    // IMAGE
+                    string fileFingerRight = $"PhotoFinger_JariTelunjukKanan_{req.NIK}_{DateTime.Now:yyyyMMddHHmmss}.txt";
+                    string pathFingerRight = Path.Combine(fingerFolder, fileFingerRight).Replace("\\", "/");
+
+                    // ISO
+                    string fileFingerRightISO = $"PhotoFingerISO_JariTelunjukKanan_{req.NIK}_{DateTime.Now:yyyyMMddHHmmss}.txt";
+                    string pathFingerRightISO = Path.Combine(fingerFolder, fileFingerRightISO).Replace("\\", "/");
 
                     if (!string.IsNullOrEmpty(req.FingerprintRight))
                     {
-                        byte[] fp = Convert.FromBase64String(req.FingerprintRight);
-                        await File.WriteAllBytesAsync(pathFinger, fp);
+                        //byte[] fp = Convert.FromBase64String(req.FingerprintRight);
+                        //await File.WriteAllBytesAsync(pathFingerRight, fp);
+                        await File.WriteAllTextAsync(pathFingerRight, req.FingerprintRight);
                     }
 
-                    var sqlFinger = @"
-            INSERT INTO Tbl_DataKTP_Finger
-            (NIK, TypeFinger, PathFile, FileName, CreatedById, CreatedByNpp, CreatedTime)
-            VALUES
-            (@NIK, @TypeFinger, @PathFile, @FileName, @CreatedById, @CreatedByNpp, GETDATE())";
+                    if (!string.IsNullOrEmpty(req.fingerprintISO_right))
+                    {
+                        //byte[] fpISO = Convert.FromBase64String(req.fingerprintISO_right);
+                        //await File.WriteAllBytesAsync(pathFingerRightISO, fpISO);
+                        await File.WriteAllTextAsync(pathFingerRightISO, req.fingerprintISO_right);
+                    }
 
-                    await conn.ExecuteAsync(sqlFinger, new
+                    var sqlFingerRight = @"
+INSERT INTO Tbl_DataKTP_Finger
+(NIK, TypeFinger, PathFile, FileName, PathFileISO, FileNameISO, FileJariISO, CreatedById, CreatedByNpp, CreatedTime)
+VALUES
+(@NIK, @TypeFinger, @PathFile, @FileName, @PathFileISO, @FileNameISO, @FileJariISO, @CreatedById, @CreatedByNpp, GETDATE())";
+
+                    await conn.ExecuteAsync(sqlFingerRight, new
                     {
                         req.NIK,
                         TypeFinger = "Jari Telunjuk Kanan",
-                        PathFile = pathFinger,
-                        FileName = fileFinger,
+                        PathFile = pathFingerRight,
+                        FileName = fileFingerRight,
+                        PathFileISO = pathFingerRightISO,
+                        FileNameISO = fileFingerRightISO,
+                        FileJariISO = req.fingerprintISO_right,
+                        req.CreatedById,
+                        req.CreatedByNpp
+                    }, tran);
+
+                    // -------------------------------------------------------
+                    // SAVE LEFT FINGER
+                    // -------------------------------------------------------
+
+                    string fileFingerLeft = $"PhotoFinger_JariTelunjukKiri_{req.NIK}_{DateTime.Now:yyyyMMddHHmmss}.txt";
+                    string pathFingerLeft = Path.Combine(fingerFolder, fileFingerLeft).Replace("\\", "/");
+
+                    string fileFingerLeftISO = $"PhotoFingerISO_JariTelunjukKiri_{req.NIK}_{DateTime.Now:yyyyMMddHHmmss}.txt";
+                    string pathFingerLeftISO = Path.Combine(fingerFolder, fileFingerLeftISO).Replace("\\", "/");
+
+                    if (!string.IsNullOrEmpty(req.FingerprintLeft))
+                    {
+                        //byte[] fp = Convert.FromBase64String(req.FingerprintLeft);
+                        //await File.WriteAllBytesAsync(pathFingerLeft, fp);
+                        await File.WriteAllTextAsync(pathFingerLeft, req.FingerprintLeft);
+                    }
+
+                    if (!string.IsNullOrEmpty(req.fingerprintISO_left))
+                    {
+                        //byte[] fpISO = Convert.FromBase64String(req.fingerprintISO_left);
+                        //await File.WriteAllBytesAsync(pathFingerLeftISO, fpISO);
+                        await File.WriteAllTextAsync(pathFingerLeftISO, req.fingerprintISO_left);
+                    }
+
+                    var sqlFingerLeft = @"
+INSERT INTO Tbl_DataKTP_Finger
+(NIK, TypeFinger, PathFile, FileName, PathFileISO, FileNameISO, FileJariISO, CreatedById, CreatedByNpp, CreatedTime)
+VALUES
+(@NIK, @TypeFinger, @PathFile, @FileName, @PathFileISO, @FileNameISO, @FileJariISO, @CreatedById, @CreatedByNpp, GETDATE())";
+
+                    await conn.ExecuteAsync(sqlFingerLeft, new
+                    {
+                        req.NIK,
+                        TypeFinger = "Jari Telunjuk Kiri",
+                        PathFile = pathFingerLeft,
+                        FileName = fileFingerLeft,
+                        PathFileISO = pathFingerLeftISO,
+                        FileNameISO = fileFingerLeftISO,
+                        FileJariISO = req.fingerprintISO_left,
                         req.CreatedById,
                         req.CreatedByNpp
                     }, tran);

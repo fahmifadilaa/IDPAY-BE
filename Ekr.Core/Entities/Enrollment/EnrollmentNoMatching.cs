@@ -429,6 +429,8 @@ namespace Ekr.Core.Entities.Enrollment
         // Images
         public string FingerprintLeft { get; set; }
         public string FingerprintRight { get; set; }
+        public string fingerprintISO_left { get; set; }
+        public string fingerprintISO_right { get; set; }
         public string Signature { get; set; }
         public string PhotoKTP { get; set; }
         public string PhotoCam { get; set; }
