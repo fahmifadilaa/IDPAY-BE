@@ -15,6 +15,7 @@ using Ekr.Core.Entities.Enrollment;
 using Ekr.Core.Entities.Recognition;
 using Ekr.Core.Entities.SettingThreshold;
 using Ekr.Core.Entities.ThirdParty;
+using Ekr.Core.Securities.Symmetric;
 using Ekr.Repository.Contracts.DataKTP;
 using Ekr.Repository.Contracts.DataMaster.Utility;
 using Ekr.Repository.Contracts.Enrollment;
@@ -186,8 +187,6 @@ namespace Ekr.Api.DataMatchingNoMatching.Controllers
         [Route("get-data-by-nik")]
         public async Task<IActionResult> getDataByNik([FromBody] MatchByNikReq req)
         {
-
-            // STEP 3 — if match, get full biodata via stored procedure
             var fullData = await _enrollmentKTPRepository.DetailData(req.NIK);
 
             if (fullData == null)
@@ -206,20 +205,39 @@ namespace Ekr.Api.DataMatchingNoMatching.Controllers
                 {
                     if (!string.IsNullOrEmpty(fullData.ktp_FingerKanan))
                     {
-                        var base64 = await client.GetStringAsync(fullData.ktp_FingerKanan);
-                        fullData.ktp_FingerKanan = "data:image/png;base64," + base64;
+                        var url = fullData.ktp_FingerKanan;
+
+                        if (!url.StartsWith("http"))
+                            url = url.Decrypt(Phrase.FileEncryption);
+
+                        var encryptedBase64 = await client.GetStringAsync(url);
+                        encryptedBase64 = encryptedBase64.Trim();
+
+                        // decrypt AES
+                        var decryptedBase64 = encryptedBase64.Decrypt(Phrase.FileEncryption);
+
+                        fullData.ktp_FingerKanan = "data:image/jpeg;base64," + decryptedBase64;
                     }
 
                     if (!string.IsNullOrEmpty(fullData.ktp_FingerKiri))
                     {
-                        var base64 = await client.GetStringAsync(fullData.ktp_FingerKiri);
-                        fullData.ktp_FingerKiri = "data:image/png;base64," + base64;
+                        var url = fullData.ktp_FingerKiri;
+
+                        if (!url.StartsWith("http"))
+                            url = url.Decrypt(Phrase.FileEncryption);
+
+                        var encryptedBase64 = await client.GetStringAsync(url);
+                        encryptedBase64 = encryptedBase64.Trim();
+
+                        var decryptedBase64 = encryptedBase64.Decrypt(Phrase.FileEncryption);
+
+                        fullData.ktp_FingerKiri = "data:image/jpeg;base64," + decryptedBase64;
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error reading fingerprint txt file");
+                Console.WriteLine(ex.Message);
             }
 
             return Ok(new
@@ -229,7 +247,6 @@ namespace Ekr.Api.DataMatchingNoMatching.Controllers
                 biodata = fullData,
             });
         }
-
 
         [HttpPost("SaveDataKTP")]
         public async Task<IActionResult> SaveDataKTP([FromBody] SaveKTPRequest req)

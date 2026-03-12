@@ -267,6 +267,31 @@ namespace Ekr.Repository.Setting
                 {
                     id = queryResponse.Id,
                     text = $"{queryResponse.NIK} - {queryResponse.Nama}",
+                    format_selected = queryResponse.ktp_NIK
+                });
+            }
+
+            return new GridResponse<DataDropdownServerSide>
+            {
+                Count = dataDropdown != null ? dataDropdown.Count() : 0,
+                Data = dataDropdown
+            };
+        }
+
+        public async Task<GridResponse<DataDropdownServerSide>> GetListPenyeliaZ90(int unitId, string npp)
+        {
+            const string proc = "[ProcGetPenyeliaWithNPP]";
+
+            IEnumerable<Pegawai> queryResponseList = await Db.WithConnectionAsync(db => db.QueryAsync<Pegawai>(proc, new { UnitId = unitId, NPP = npp }, commandType: CommandType.StoredProcedure));
+
+            var dataDropdown = new List<DataDropdownServerSide>();
+            foreach (var queryResponse in queryResponseList)
+            {
+                dataDropdown.Add(new DataDropdownServerSide
+                {
+                    id = queryResponse.Id,
+                    text = $"{queryResponse.NIK} - {queryResponse.Nama}",
+                    nik = queryResponse.ktp_NIK
                 });
             }
 
@@ -315,6 +340,31 @@ namespace Ekr.Repository.Setting
                 {
                     id = queryResponse.Id,
                     text = $"{queryResponse.NIK} - {queryResponse.Nama}",
+                });
+            }
+
+            return new GridResponse<DataDropdownServerSide>
+            {
+                Count = dataDropdown != null ? dataDropdown.Count() : 0,
+                Data = dataDropdown
+            };
+        }
+
+        public async Task<GridResponse<DataDropdownServerSide>> GetListPemimpinZ90(int unitId, string npp)
+        {
+            const string proc = "[ProcGetPemimpinWithNPP]";
+
+            IEnumerable<Pegawai> queryResponseList = await Db.WithConnectionAsync(db => db.QueryAsync<Pegawai>(proc, new { UnitId = unitId, NPP = npp }, commandType: CommandType.StoredProcedure));
+
+
+            var dataDropdown = new List<DataDropdownServerSide>();
+            foreach (var queryResponse in queryResponseList)
+            {
+                dataDropdown.Add(new DataDropdownServerSide
+                {
+                    id = queryResponse.Id,
+                    text = $"{queryResponse.NIK} - {queryResponse.Nama}",
+                    nik = queryResponse.ktp_NIK
                 });
             }
 

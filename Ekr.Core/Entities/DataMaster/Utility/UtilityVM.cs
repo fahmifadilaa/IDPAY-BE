@@ -26,6 +26,7 @@ namespace Ekr.Core.Entities.DataMaster.Utility
         public string text { get; set; }
         public string format_selected { get; set; }
         public string nama_text { get; set; }
+        public string nik { get; set; }
     }
     public class Jumlah_Inbox
     {

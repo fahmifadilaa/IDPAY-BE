@@ -13,5 +13,6 @@ namespace Ekr.Core.Entities.SettingThreshold
         public int Role_Id { get; set; }
         public string NIK { get; set; }
         public string Nama { get; set; }
+        public string ktp_NIK { get; set; }
     }
 }

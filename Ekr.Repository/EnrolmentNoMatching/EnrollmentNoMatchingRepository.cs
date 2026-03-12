@@ -181,14 +181,18 @@ namespace Ekr.Repository.EnrolmentNoMatching
                     {
                         //byte[] fp = Convert.FromBase64String(req.FingerprintRight);
                         //await File.WriteAllBytesAsync(pathFingerRight, fp);
-                        await File.WriteAllTextAsync(pathFingerRight, req.FingerprintRight);
+                        //await File.WriteAllTextAsync(pathFingerRight, req.FingerprintRight);
+                        string encryptedFinger = req.FingerprintRight.Encrypt(Phrase.FileEncryption);
+                        await File.WriteAllTextAsync(pathFingerRight, encryptedFinger);
                     }
 
                     if (!string.IsNullOrEmpty(req.fingerprintISO_right))
                     {
                         //byte[] fpISO = Convert.FromBase64String(req.fingerprintISO_right);
                         //await File.WriteAllBytesAsync(pathFingerRightISO, fpISO);
-                        await File.WriteAllTextAsync(pathFingerRightISO, req.fingerprintISO_right);
+                        //await File.WriteAllTextAsync(pathFingerRightISO, req.fingerprintISO_right);
+                        string encryptedISO = req.fingerprintISO_right.Encrypt(Phrase.FileEncryption);
+                        await File.WriteAllTextAsync(pathFingerRightISO, encryptedISO);
                     }
 
                     var sqlFingerRight = @"
@@ -205,7 +209,7 @@ VALUES
                         FileName = fileFingerRight,
                         PathFileISO = pathFingerRightISO,
                         FileNameISO = fileFingerRightISO,
-                        FileJariISO = req.fingerprintISO_right,
+                        FileJariISO = req.fingerprintISO_right.Encrypt(Phrase.FileEncryption),
                         req.CreatedById,
                         req.CreatedByNpp
                     }, tran);
@@ -224,14 +228,18 @@ VALUES
                     {
                         //byte[] fp = Convert.FromBase64String(req.FingerprintLeft);
                         //await File.WriteAllBytesAsync(pathFingerLeft, fp);
-                        await File.WriteAllTextAsync(pathFingerLeft, req.FingerprintLeft);
+                        //await File.WriteAllTextAsync(pathFingerLeft, req.FingerprintLeft);
+                        string encryptedFinger = req.FingerprintLeft.Encrypt(Phrase.FileEncryption);
+                        await File.WriteAllTextAsync(pathFingerLeft, encryptedFinger);
                     }
 
                     if (!string.IsNullOrEmpty(req.fingerprintISO_left))
                     {
                         //byte[] fpISO = Convert.FromBase64String(req.fingerprintISO_left);
                         //await File.WriteAllBytesAsync(pathFingerLeftISO, fpISO);
-                        await File.WriteAllTextAsync(pathFingerLeftISO, req.fingerprintISO_left);
+                        //await File.WriteAllTextAsync(pathFingerLeftISO, req.fingerprintISO_left);
+                        string encryptedISO = req.fingerprintISO_left.Encrypt(Phrase.FileEncryption);
+                        await File.WriteAllTextAsync(pathFingerLeftISO, encryptedISO);
                     }
 
                     var sqlFingerLeft = @"
@@ -248,7 +256,7 @@ VALUES
                         FileName = fileFingerLeft,
                         PathFileISO = pathFingerLeftISO,
                         FileNameISO = fileFingerLeftISO,
-                        FileJariISO = req.fingerprintISO_left,
+                        FileJariISO = req.fingerprintISO_left.Encrypt(Phrase.FileEncryption),
                         req.CreatedById,
                         req.CreatedByNpp
                     }, tran);

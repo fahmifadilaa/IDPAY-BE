@@ -257,6 +257,27 @@ namespace Ekr.Api.Threshold.Controllers
         }
 
         /// <summary>
+        /// Get list penyelia
+        /// </summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        [HttpGet("get_penyelia_Z90")]
+        [ProducesResponseType(typeof(ServiceResponse<GridResponse<DataDropdownServerSide>>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "Setting Threshold Z90")]
+        public async Task<ServiceResponse<GridResponse<DataDropdownServerSide>>> GetListPenyeliaNewZ90([FromQuery] int unitId, string npp)
+        {
+            GridResponse<DataDropdownServerSide> res = await _settingThresholdRepository.GetListPenyeliaZ90(unitId, npp);
+
+            return new ServiceResponse<GridResponse<DataDropdownServerSide>>
+            {
+                Status = (int)ServiceResponseStatus.SUKSES,
+                Message = ResponseSukses,
+                Data = res
+            };
+        }
+
+        /// <summary>
         /// Get list pemimpin
         /// </summary>
         /// <param name="req"></param>
@@ -289,6 +310,26 @@ namespace Ekr.Api.Threshold.Controllers
         public async Task<ServiceResponse<GridResponse<DataDropdownServerSide>>> GetListPemimpinNew([FromQuery] int unitId, string npp)
         {
             GridResponse<DataDropdownServerSide> res = await _settingThresholdRepository.GetListPemimpin2(unitId, npp);
+
+            return new ServiceResponse<GridResponse<DataDropdownServerSide>>
+            {
+                Status = (int)ServiceResponseStatus.SUKSES,
+                Message = ResponseSukses,
+                Data = res
+            };
+        }
+        /// <summary>
+        /// Get list pemimpin
+        /// </summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        [HttpGet("get_pemimpin_Z90")]
+        [ProducesResponseType(typeof(ServiceResponse<GridResponse<DataDropdownServerSide>>), 200)]
+        [ProducesResponseType(500)]
+        [LogActivity(Keterangan = "Setting Threshold")]
+        public async Task<ServiceResponse<GridResponse<DataDropdownServerSide>>> GetListPemimpinZ90([FromQuery] int unitId, string npp)
+        {
+            GridResponse<DataDropdownServerSide> res = await _settingThresholdRepository.GetListPemimpinZ90(unitId, npp);
 
             return new ServiceResponse<GridResponse<DataDropdownServerSide>>
             {

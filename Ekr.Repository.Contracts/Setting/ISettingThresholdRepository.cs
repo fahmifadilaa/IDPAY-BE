@@ -20,8 +20,10 @@ namespace Ekr.Repository.Contracts.Setting
         Task DeleteSettingTreshold(SettingThresholdRequest req, int PegawaiId);
         Task<GridResponse<DataDropdownServerSide>> GetListPenyelia(int unitId);
         Task<GridResponse<DataDropdownServerSide>> GetListPenyelia2(int unitId, string npp);
+        Task<GridResponse<DataDropdownServerSide>> GetListPenyeliaZ90(int unitId, string npp);
         Task<GridResponse<DataDropdownServerSide>> GetListPemimpin(int unitId);
         Task<GridResponse<DataDropdownServerSide>> GetListPemimpin2(int unitId, string npp);
+        Task<GridResponse<DataDropdownServerSide>> GetListPemimpinZ90(int unitId, string npp);
         Task<GridResponse<DataDropdownServerSide>> GetDropdownTreshold(DropdownLookupFilterVM request);
         Task<TblSettingThresholdLogVM> InsertSettingThresholdLogAsync(Tbl_Setting_Threshold_Log req);
         Task UpdateSettingTresholdStatusAsync(SettingThresholdStatusRequest req, int updatedById);
