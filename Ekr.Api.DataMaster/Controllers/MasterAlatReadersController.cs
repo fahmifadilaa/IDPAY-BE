@@ -366,21 +366,43 @@ namespace Ekr.Api.DataMaster.Controllers
 
             var jObject = Newtonsoft.Json.Linq.JObject.Parse(json);
 
-            // Ambil node "data"
             var dataToken = jObject["data"];
 
-            if (dataToken != null && dataToken.Type == Newtonsoft.Json.Linq.JTokenType.Object)
+            if (dataToken != null)
             {
-                var dataObj = (Newtonsoft.Json.Linq.JObject)dataToken;
+                if (dataToken.Type == Newtonsoft.Json.Linq.JTokenType.String)
+                {
+                    var value = dataToken.ToString();
 
-                MaskField(dataObj, "ktp_NIK", 4);
-                MaskField(dataObj, "ktp_Nama", 4);
-                MaskField(dataObj, "ktp_Alamat", 8);
-                MaskField(dataObj, "ktp_TempatLahir", 3);
-                MaskField(dataObj, "ktp_TanggalLahir", 3);
-                MaskField(dataObj, "ktp_TTL", 3);
-                MaskField(dataObj, "image", 3);
+                    if (!string.IsNullOrEmpty(value) &&
+                        (value.StartsWith("/9j/") || value.StartsWith("iVBOR") || value.StartsWith("Qk")))
+                    {
+                        jObject["data"] = null;
+                    }
+                }
 
+                else if (dataToken.Type == Newtonsoft.Json.Linq.JTokenType.Object)
+                {
+                    var dataObj = (Newtonsoft.Json.Linq.JObject)dataToken;
+
+                    MaskField(dataObj, "ktp_NIK", 4);
+                    MaskField(dataObj, "ktp_Nama", 4);
+                    MaskField(dataObj, "ktp_Alamat", 8);
+                    MaskField(dataObj, "ktp_TempatLahir", 3);
+                    MaskField(dataObj, "ktp_TanggalLahir", 3);
+                    MaskField(dataObj, "ktp_TTL", 3);
+
+                    foreach (var prop in dataObj.Properties())
+                    {
+                        var value = prop.Value?.ToString();
+
+                        if (!string.IsNullOrEmpty(value) &&
+                            (value.StartsWith("/9j/") || value.StartsWith("iVBOR") || value.StartsWith("Qk")))
+                        {
+                            prop.Value = null;
+                        }
+                    }
+                }
             }
 
             return jObject.ToString(Newtonsoft.Json.Formatting.None);
@@ -393,8 +415,8 @@ namespace Ekr.Api.DataMaster.Controllers
                 var value = obj[key].ToString();
                 if (value.Length > visibleLast)
                 {
-                    obj[key] = new string('*', value.Length - visibleLast) +
-                               value.Substring(value.Length - visibleLast);
+                    obj[key] = value.Substring(0, visibleLast) +
+                new string('*', value.Length - visibleLast);
                 }
             }
         }
